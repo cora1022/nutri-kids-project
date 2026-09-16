@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>든든 백엔드 설명서</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17233b;
+      --muted: #65738b;
+      --line: #dce4ee;
+      --page: #f4f7fb;
+      --surface: #ffffff;
+      --navy: #193a6a;
+      --blue: #3f78bf;
+      --blue-soft: #eaf2fc;
+      --green: #21856b;
+      --green-soft: #e3f4ee;
+      --amber: #a66a14;
+      --amber-soft: #fff1d5;
+      --red: #b24b4b;
+      --red-soft: #fdeaea;
+      --code: #10203a;
+      --shadow: 0 18px 45px rgba(25, 58, 106, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--page);
+      font-family: Pretendard, "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+    a { color: inherit; }
+    code, pre { font-family: "Cascadia Code", Consolas, monospace; }
+    .layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 30px 22px;
+      color: #fff;
+      background: var(--navy);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 34px; }
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 13px;
+      color: var(--navy);
+      background: #cde9df;
+      font-weight: 800;
+    }
+    .brand strong { display: block; font-size: 18px; }
+    .brand span { display: block; color: #bdd0ea; font-size: 12px; }
+    nav { display: grid; gap: 6px; }
+    nav a {
+      padding: 9px 12px;
+      border-radius: 9px;
+      color: #dce8f8;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    nav a:hover, nav a:focus { background: rgba(255, 255, 255, 0.11); color: #fff; }
+    .side-note { position: absolute; right: 22px; bottom: 24px; left: 22px; color: #b9cae1; font-size: 12px; }
+    main { width: 100%; max-width: 1180px; padding: 52px 56px 100px; }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 42px;
+      border-radius: 24px;
+      color: #fff;
+      background: linear-gradient(135deg, #193a6a 0%, #285c98 62%, #21856b 130%);
+      box-shadow: var(--shadow);
+    }
+    .hero::after {
+      position: absolute;
+      right: -80px;
+      bottom: -120px;
+      width: 330px;
+      height: 330px;
+      border: 58px solid rgba(255,255,255,.08);
+      border-radius: 50%;
+      content: "";
+    }
+    .eyebrow { margin: 0 0 7px; color: #aee3d1; font-size: 13px; font-weight: 700; letter-spacing: .08em; }
+    h1 { margin: 0; font-size: clamp(30px, 4vw, 48px); line-height: 1.2; }
+    .hero p { max-width: 700px; margin: 18px 0 0; color: #dceafb; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 25px; }
+    .hero-actions a { padding: 10px 15px; border-radius: 10px; background: #fff; color: var(--navy); text-decoration: none; font-size: 14px; font-weight: 700; }
+    .hero-actions a.secondary { border: 1px solid rgba(255,255,255,.35); color: #fff; background: transparent; }
+    section { margin-top: 52px; scroll-margin-top: 28px; }
+    .section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
+    h2 { margin: 0; font-size: 27px; line-height: 1.3; }
+    h3 { margin: 0 0 8px; font-size: 17px; }
+    .section-head p { max-width: 590px; margin: 0; color: var(--muted); font-size: 14px; }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: var(--surface);
+      box-shadow: 0 8px 25px rgba(25, 58, 106, 0.045);
+    }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .summary { padding: 20px; }
+    .summary b { display: block; margin-bottom: 5px; color: var(--blue); font-size: 25px; }
+    .summary span { color: var(--muted); font-size: 13px; }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(130px, 1fr));
+      align-items: stretch;
+      gap: 22px;
+    }
+    .flow-step { position: relative; padding: 20px 17px; text-align: center; }
+    .flow-step:not(:last-child)::after { position: absolute; top: 50%; right: -20px; color: var(--blue); content: "→"; font-size: 24px; transform: translateY(-50%); }
+    .step-no { display: inline-grid; width: 30px; height: 30px; margin-bottom: 10px; place-items: center; border-radius: 50%; color: var(--blue); background: var(--blue-soft); font-size: 13px; font-weight: 800; }
+    .flow-step p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .source-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .source { padding: 23px; border-top: 4px solid var(--blue); }
+    .source.confirmed { border-top-color: var(--green); }
+    .source.estimated { border-top-color: var(--amber); }
+    .source.missing { border-top-color: var(--red); }
+    .tag { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+    .confirmed .tag { color: var(--green); background: var(--green-soft); }
+    .estimated .tag { color: var(--amber); background: var(--amber-soft); }
+    .missing .tag { color: var(--red); background: var(--red-soft); }
+    .source ul { margin: 14px 0 0; padding-left: 19px; color: var(--muted); font-size: 13px; }
+    .endpoint-list { overflow: hidden; }
+    .endpoint {
+      display: grid;
+      grid-template-columns: 90px 260px 1fr 80px;
+      align-items: center;
+      gap: 12px;
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .endpoint:last-child { border-bottom: 0; }
+    .method { width: fit-content; padding: 4px 8px; border-radius: 7px; color: var(--green); background: var(--green-soft); font-size: 11px; font-weight: 800; }
+    .method.post { color: var(--blue); background: var(--blue-soft); }
+    .endpoint code { color: var(--code); font-size: 13px; font-weight: 700; }
+    .endpoint span { color: var(--muted); font-size: 13px; }
+    .state { justify-self: end; color: var(--green) !important; font-weight: 700; }
+    .state.todo { color: var(--amber) !important; }
+    .algorithm { display: grid; grid-template-columns: 1.05fr .95fr; gap: 16px; }
+    .algo-list { padding: 26px; }
+    .algo-row { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+    .algo-row:last-child { border-bottom: 0; }
+    .algo-row b { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 8px; color: var(--blue); background: var(--blue-soft); }
+    .algo-row p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+    .decision { padding: 26px; background: var(--code); color: #eaf2fc; }
+    .decision h3 { color: #fff; }
+    .decision-line { display: grid; grid-template-columns: 100px 1fr; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,.13); font-size: 13px; }
+    .decision-line:last-child { border-bottom: 0; }
+    .decision-line b { color: #8fd5bd; }
+    .decision-line span { color: #c6d5e8; }
+    .json-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .code-box { overflow: hidden; }
+    .code-head { display: flex; justify-content: space-between; padding: 13px 17px; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 700; }
+    pre { overflow-x: auto; margin: 0; padding: 18px; color: #d9e7f7; background: var(--code); font-size: 12px; line-height: 1.65; }
+    .file-tree { padding: 22px 26px; }
+    .file { display: grid; grid-template-columns: 280px 1fr; gap: 18px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+    .file:last-child { border-bottom: 0; }
+    .file code { color: var(--blue); font-size: 12px; font-weight: 700; }
+    .file span { color: var(--muted); font-size: 13px; }
+    .notice { padding: 22px; border-left: 5px solid var(--amber); }
+    .notice p { margin: 5px 0 0; color: var(--muted); font-size: 14px; }
+    footer { margin-top: 56px; padding-top: 22px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { position: static; height: auto; padding: 18px 22px; }
+      .brand { margin: 0; }
+      nav, .side-note { display: none; }
+      main { padding: 34px 24px 70px; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .flow { grid-template-columns: 1fr; gap: 10px; }
+      .flow-step:not(:last-child)::after { top: auto; right: 50%; bottom: -18px; content: "↓"; transform: translateX(50%); }
+      .source-grid, .algorithm, .json-grid { grid-template-columns: 1fr; }
+      .endpoint { grid-template-columns: 72px 1fr; }
+      .endpoint span { grid-column: 2; }
+      .state { grid-column: 1; grid-row: 2; justify-self: start; }
+    }
+    @media (max-width: 560px) {
+      main { padding: 24px 15px 60px; }
+      .hero { padding: 28px 22px; border-radius: 18px; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .section-head { align-items: flex-start; flex-direction: column; }
+      .file { grid-template-columns: 1fr; gap: 3px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside>
+      <div class="brand">
+        <div class="brand-mark">든</div>
+        <div><strong>든든 Backend</strong><span>FastAPI 설명서</span></div>
+      </div>
+      <nav aria-label="문서 목차">
+        <a href="#overview">전체 구조</a>
+        <a href="#flow">요청 처리 흐름</a>
+        <a href="#sources">데이터 결합 기준</a>
+        <a href="#api">API 목록</a>
+        <a href="#algorithm">분석 알고리즘</a>
+        <a href="#json">JSON 예시</a>
+        <a href="#files">프로젝트 파일</a>
+        <a href="#limits">현재 제한사항</a>
+      </nav>
+      <p class="side-note">CU 상품 검색과 영양 분석을 담당하는 서버 구조를 설명합니다.</p>
+    </aside>
+
+    <main>
+      <header class="hero">
+        <p class="eyebrow">NUTRI KIDS BACKEND</p>
+        <h1>상품을 찾고,<br>영양을 계산하는 서버</h1>
+        <p>React가 상품과 사용자 정보를 JSON으로 보내면 FastAPI가 CU 상품 DB, 식약처 정보, 국가표준식품성분표를 이용해 한 끼 영양 상태와 추천 상품을 계산합니다.</p>
+        <div class="hero-actions">
+          <a href="http://127.0.0.1:8000/docs">FastAPI 문서 열기</a>
+          <a class="secondary" href="/">프론트 화면으로 돌아가기</a>
+        </div>
+      </header>
+
+      <section id="overview">
+        <div class="section-head">
+          <div><p class="eyebrow">OVERVIEW</p><h2>백엔드가 맡는 일</h2></div>
+          <p>프론트는 입력과 표시를 담당하고, 백엔드는 데이터 조회와 계산 규칙을 한곳에서 관리합니다.</p>
+        </div>
+        <div class="summary-grid">
+          <div class="card summary"><b>5개</b><strong>CU 테스트 상품</strong><span>검색과 분석에 사용하는 소규모 데이터</span></div>
+          <div class="card summary"><b>7종</b><strong>핵심 영양소</strong><span>열량, 단백질, 칼슘, 철, 비타민 A와 C, 나트륨</span></div>
+          <div class="card summary"><b>3단계</b><strong>데이터 품질</strong><span>식약처 확인, 국가표준 추정, 미확인</span></div>
+          <div class="card summary"><b>3개</b><strong>추천 후보</strong><span>부족 영양소를 기준으로 상위 상품 반환</span></div>
+        </div>
+      </section>
+
+      <section id="flow">
+        <div class="section-head">
+          <div><p class="eyebrow">REQUEST FLOW</p><h2>요청 한 번이 처리되는 과정</h2></div>
+        </div>
+        <div class="flow">
+          <div class="card flow-step"><span class="step-no">1</span><h3>React 요청</h3><p>프로필과 담은 상품을 JSON으로 전송</p></div>
+          <div class="card flow-step"><span class="step-no">2</span><h3>FastAPI 검증</h3><p>필드, 나이, 섭취량, 단위를 검사</p></div>
+          <div class="card flow-step"><span class="step-no">3</span><h3>DB 조회</h3><p>상품과 영양성분, 출처 상태를 조회</p></div>
+          <div class="card flow-step"><span class="step-no">4</span><h3>분석과 추천</h3><p>목표 비교 후 부족 성분 후보를 계산</p></div>
+          <div class="card flow-step"><span class="step-no">5</span><h3>JSON 응답</h3><p>판정, 품질, 경고, 추천을 반환</p></div>
+        </div>
+      </section>
+
+      <section id="sources">
+        <div class="section-head">
+          <div><p class="eyebrow">DATA SOURCES</p><h2>CU 상품과 공공데이터 결합</h2></div>
+          <p>값을 임의로 채우지 않고 출처별 신뢰 수준을 응답에 함께 전달합니다.</p>
+        </div>
+        <div class="source-grid">
+          <article class="card source confirmed">
+            <span class="tag">CONFIRMED</span><h3>식약처 확인값</h3>
+            <ul><li>품목제조보고번호 또는 제품명으로 연결</li><li>API의 기준량을 실제 판매 용량으로 환산</li><li>현재 바나나킥의 열량, 단백질, 나트륨에 적용</li></ul>
+          </article>
+          <article class="card source estimated">
+            <span class="tag">ESTIMATED</span><h3>국가표준 추정값</h3>
+            <ul><li>제품과 유사한 표준 식품을 수동 매핑</li><li>100g 기준값을 상품 제공량으로 환산</li><li>바나나, 두유, 닭가슴살 테스트 상품에 적용</li></ul>
+          </article>
+          <article class="card source missing">
+            <span class="tag">MISSING</span><h3>미확인값</h3>
+            <ul><li>안전하게 연결할 자료가 없으면 null 유지</li><li>0으로 바꾸거나 부족으로 단정하지 않음</li><li>해당 영양소 판정은 UNKNOWN으로 보류</li></ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="api">
+        <div class="section-head">
+          <div><p class="eyebrow">API</p><h2>프론트가 호출하는 주소</h2></div>
+        </div>
+        <div class="card endpoint-list">
+          <div class="endpoint"><b class="method">GET</b><code>/api/v1/health</code><span>서버 상태 확인</span><span class="state">구현</span></div>
+          <div class="endpoint"><b class="method">GET</b><code>/api/v1/foods?query=두유</code><span>상품명과 브랜드 검색</span><span class="state">구현</span></div>
+          <div class="endpoint"><b class="method">GET</b><code>/api/v1/foods/barcode/{barcode}</code><span>바코드로 상품 조회</span><span class="state">구현</span></div>
+          <div class="endpoint"><b class="method">GET</b><code>/api/v1/foods/{foodId}</code><span>상품 상세 조회</span><span class="state">구현</span></div>
+          <div class="endpoint"><b class="method post">POST</b><code>/api/v1/meals/analyze</code><span>목표 계산, 한 끼 평가, 상품 추천</span><span class="state">구현</span></div>
+          <div class="endpoint"><b class="method post">POST</b><code>/api/v1/auth/signup</code><span>회원가입</span><span class="state todo">예정</span></div>
+          <div class="endpoint"><b class="method post">POST</b><code>/api/v1/meals</code><span>확정 식사 저장</span><span class="state todo">예정</span></div>
+          <div class="endpoint"><b class="method">GET</b><code>/api/v1/meals/daily/{date}</code><span>하루 식사 합산</span><span class="state todo">예정</span></div>
+        </div>
+      </section>
+
+      <section id="algorithm">
+        <div class="section-head">
+          <div><p class="eyebrow">ALGORITHM</p><h2>한 끼 분석과 추천 규칙</h2></div>
+        </div>
+        <div class="algorithm">
+          <div class="card algo-list">
+            <div class="algo-row"><b>1</b><div><strong>하루 목표 선택</strong><p>성별과 나이 구간에 맞는 간이 목표표를 선택합니다.</p></div></div>
+            <div class="algo-row"><b>2</b><div><strong>한 끼 목표 계산</strong><p>하루 목표를 사용자가 입력한 하루 식사 횟수로 나눕니다.</p></div></div>
+            <div class="algo-row"><b>3</b><div><strong>섭취량 환산</strong><p>1회분, g, ml 입력을 상품 제공량 기준 배수로 변환합니다.</p></div></div>
+            <div class="algo-row"><b>4</b><div><strong>영양소 합산</strong><p>확인된 값만 합산하고 빠진 값이 있으면 품질을 MIXED로 표시합니다.</p></div></div>
+            <div class="algo-row"><b>5</b><div><strong>추천 점수 계산</strong><p>부족량 대비 후보 상품의 기여도를 계산하고 열량과 나트륨 조건을 적용합니다.</p></div></div>
+          </div>
+          <div class="card decision">
+            <h3>판정 기준</h3>
+            <div class="decision-line"><b>LOW</b><span>목표의 85% 미만</span></div>
+            <div class="decision-line"><b>ADEQUATE</b><span>목표의 85% 이상 130% 이하</span></div>
+            <div class="decision-line"><b>HIGH</b><span>목표의 130% 초과</span></div>
+            <div class="decision-line"><b>나트륨</b><span>한 끼 상한을 초과한 경우 HIGH</span></div>
+            <div class="decision-line"><b>UNKNOWN</b><span>선택 상품 중 해당 성분이 하나라도 누락된 경우</span></div>
+            <div class="decision-line"><b>추천 제외</b><span>남은 열량의 150%를 넘거나 나트륨 여유를 크게 초과한 상품</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="json">
+        <div class="section-head">
+          <div><p class="eyebrow">JSON CONTRACT</p><h2>프론트와 주고받는 데이터</h2></div>
+        </div>
+        <div class="json-grid">
+          <div class="card code-box">
+            <div class="code-head"><span>분석 요청</span><code>POST /meals/analyze</code></div>
+            <pre><code>{
+  "mealType": "LUNCH",
+  "profile": {
+    "sex": "MALE",
+    "age": 10,
+    "heightCm": 140,
+    "weightKg": 38,
+    "mealsPerDay": 3
+  },
+  "items": [{
+    "foodId": "cu:6979",
+    "quantity": 1,
+    "quantityUnit": "SERVING"
+  }],
+  "recommendationScope": "CU_ONLY"
+}</code></pre>
+          </div>
+          <div class="card code-box">
+            <div class="code-head"><span>영양소 응답 일부</span><code>200 OK</code></div>
+            <pre><code>{
+  "nutrients": {
+    "vitaminC": {
+      "actual": 15.84,
+      "target": 18.33,
+      "unit": "mg",
+      "ratio": 0.864,
+      "status": "ADEQUATE",
+      "quality": "ESTIMATED"
+    }
+  },
+  "recommendations": [...],
+  "warnings": []
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="files">
+        <div class="section-head">
+          <div><p class="eyebrow">CODE MAP</p><h2>어디에 무엇이 있는가</h2></div>
+        </div>
+        <div class="card file-tree">
+          <div class="file"><code>backend/app/main.py</code><span>FastAPI 실행과 라우터 등록</span></div>
+          <div class="file"><code>backend/app/models.py</code><span>상품, 영양소, 사용자, 식사 테이블 정의</span></div>
+          <div class="file"><code>backend/app/routers/foods.py</code><span>상품 검색, 바코드, 상세 API</span></div>
+          <div class="file"><code>backend/app/routers/meals.py</code><span>한 끼 분석 API 진입점</span></div>
+          <div class="file"><code>backend/app/services/nutrition.py</code><span>목표량, 합산, 판정, 추천 핵심 로직</span></div>
+          <div class="file"><code>backend/app/services/mfds.py</code><span>식약처 API 호출과 응답 변환</span></div>
+          <div class="file"><code>backend/scripts/import_data.py</code><span>CU와 국가표준식품성분표 테스트 데이터 적재</span></div>
+          <div class="file"><code>backend/tests/test_api.py</code><span>검색 계약, 식약처 파싱, 미확인 처리 테스트</span></div>
+        </div>
+      </section>
+
+      <section id="limits">
+        <div class="section-head">
+          <div><p class="eyebrow">CURRENT LIMITS</p><h2>현재 단계에서 알아둘 점</h2></div>
+        </div>
+        <div class="card notice">
+          <h3>공모전 프로토타입 기준입니다</h3>
+          <p>현재 상품 연결은 5개 테스트 상품에 대한 수동 매핑입니다. 두유는 테스트 단계에서 1ml를 1g으로 환산합니다. 키와 몸무게는 요청에 포함되지만 현재 목표표는 성별, 나이, 식사 횟수를 사용합니다. 회원 인증, 식사 영구 저장, 하루 평가는 다음 구현 범위입니다.</p>
+        </div>
+      </section>
+
+      <footer>든든 백엔드 설명서, FastAPI + SQLAlchemy + SQLite 또는 MySQL</footer>
+    </main>
+  </div>
+</body>
+</html>
