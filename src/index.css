@@ -1,0 +1,59 @@
+:root {
+  --color-bg: #F5F8FB;
+  --color-surface: #FFFFFF;
+  --color-text: #24313D;
+  --color-muted: #6B7785;
+  --color-primary: #FF6B35;
+  --color-primary-dark: #E24E17;
+  --color-primary-tint: #FFE7DB;
+  --color-secondary: #1F5B4C;
+  --color-line: #E2E8EE;
+
+  --status-ok: #2F9E64;
+  --status-ok-bg: #E6F6ED;
+  --status-deficient: #D9483C;
+  --status-deficient-bg: #FCEAE8;
+  --status-over: #C9871E;
+  --status-over-bg: #FBF0DC;
+  --status-unknown: #8C97A6;
+  --status-unknown-bg: #EEF1F4;
+
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --shadow-card: 0 6px 20px rgba(36, 49, 61, 0.06);
+
+  font-family: 'Noto Sans KR', system-ui, sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+h1, h2, h3 {
+  font-family: 'Jua', 'Noto Sans KR', sans-serif;
+  font-weight: 400;
+  line-height: 1.35;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+button {
+  font-family: inherit;
+}
+
+input {
+  font-family: inherit;
+}
