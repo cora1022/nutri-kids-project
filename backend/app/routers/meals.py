@@ -1,8 +1,10 @@
 from datetime import date
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 
+from app.database import get_db
 from app.routers.errors import not_implemented
 from app.schemas.common import ErrorResponse
 from app.schemas.meal import (
@@ -12,6 +14,7 @@ from app.schemas.meal import (
     MealCreateRequest,
     MealResponse,
 )
+from app.services.nutrition import analyze_meal as analyze_meal_service
 
 
 router = APIRouter(prefix="/meals", tags=["meals"])
@@ -22,8 +25,11 @@ router = APIRouter(prefix="/meals", tags=["meals"])
     response_model=MealAnalysisResponse,
     responses={501: {"model": ErrorResponse}},
 )
-def analyze_meal(_: MealAnalyzeRequest) -> MealAnalysisResponse | JSONResponse:
-    return not_implemented("한 끼 영양 분석과 추천")
+def analyze_meal(request: MealAnalyzeRequest, db: Session = Depends(get_db)) -> MealAnalysisResponse:
+    try:
+        return analyze_meal_service(request, db)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 @router.post(
