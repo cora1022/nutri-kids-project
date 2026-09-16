@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import models  # noqa: F401
 from app.config import settings
 from app.database import Base, engine
-from app.routers import auth, health, meals, users
+from app.routers import auth, foods, health, meals, users
 
 
 @asynccontextmanager
@@ -29,7 +29,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.include_router(health.router, prefix=settings.api_prefix)
 app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(users.router, prefix=settings.api_prefix)
+app.include_router(foods.router, prefix=settings.api_prefix)
 app.include_router(meals.router, prefix=settings.api_prefix)
