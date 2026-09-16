@@ -1,26 +1,27 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from '../common/Button';
 import { Card, EmptyState, ScreenShell } from '../common/Card';
 import NutrientBar from '../common/NutrientBar';
 import StageTracker from '../common/StageTracker';
 import { useApp } from '../../hooks/useApp';
 import { NUTRIENT_META } from '../../data/goals';
-import { evaluateNutrients, getDeficientKeys, recommendFoods, sumNutrients } from '../../utils/nutrition';
+import { analyzeMeal } from '../../services/mealApi';
 
 export default function MealResultScreen() {
-  const { mealItems, mealGoals, setStage, confirmMeal, addFoodToMeal } = useApp();
+  const { mealItems, profile, setStage, confirmMeal, addFoodToMeal } = useApp();
   const [saveState, setSaveState] = useState('idle'); // idle | saving | error | saved
   const [askDayDone, setAskDayDone] = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const [analysisError, setAnalysisError] = useState('');
 
-  const totals = useMemo(() => sumNutrients(mealItems), [mealItems]);
-  const evaluation = useMemo(() => evaluateNutrients(totals, mealGoals), [totals, mealGoals]);
-  const deficientKeys = useMemo(() => getDeficientKeys(evaluation), [evaluation]);
-  const excludeIds = mealItems.map((i) => i.food.id);
-  const recommendation = useMemo(
-    () => recommendFoods({ totals, goals: mealGoals, deficientKeys, excludeIds }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [totals, mealGoals, deficientKeys]
-  );
+  useEffect(() => {
+    if (!mealItems.length || !profile) return;
+    let active = true;
+    analyzeMeal(profile, mealItems)
+      .then((result) => active && setAnalysis(result))
+      .catch((error) => active && setAnalysisError(error.message));
+    return () => { active = false; };
+  }, [mealItems, profile]);
 
   // 1) 빈 식사
   if (mealItems.length === 0) {
@@ -69,6 +70,22 @@ export default function MealResultScreen() {
     );
   }
 
+  if (analysisError) {
+    return (
+      <ScreenShell eyebrow="03 한 끼 평가" title="분석하지 못했어요">
+        <Card tone="danger"><p>{analysisError}</p></Card>
+        <Button onClick={() => setStage('search')}>음식 입력으로 돌아가기</Button>
+      </ScreenShell>
+    );
+  }
+
+  if (!analysis) {
+    return <ScreenShell eyebrow="03 한 끼 평가" title="영양 정보를 계산하고 있어요" />;
+  }
+
+  const { evaluation, recommendations, warnings } = analysis;
+  const deficientKeys = NUTRIENT_META.filter(({ key }) => evaluation[key]?.status === 'deficient').map(({ key }) => key);
+
   return (
     <ScreenShell eyebrow="03 한 끼 평가 · 추천" title="이번 한 끼 결과예요">
       <StageTracker current="evaluate" />
@@ -82,11 +99,11 @@ export default function MealResultScreen() {
       {deficientKeys.length > 0 && (
         <Card tone="muted" className="recommend-block">
           <h3>이런 걸 더해보는 건 어때요?</h3>
-          {recommendation.candidates.length === 0 ? (
-            <p className="muted-line">{recommendation.reason || '추천할 항목이 없어요'}</p>
+          {recommendations.length === 0 ? (
+            <p className="muted-line">남은 칼로리와 나트륨 범위에서 추천할 항목이 없어요.</p>
           ) : (
             <div className="recommend-list">
-              {recommendation.candidates.map(({ food, reasonKeys }) => (
+              {recommendations.map(({ food, reasonKeys }) => (
                 <div key={food.id} className="recommend-card">
                   <div>
                     <strong>{food.name}</strong>
@@ -107,6 +124,12 @@ export default function MealResultScreen() {
               ))}
             </div>
           )}
+        </Card>
+      )}
+
+      {warnings.length > 0 && (
+        <Card tone="muted">
+          <p className="muted-line">미확인 성분은 0으로 계산하지 않았으며 해당 판정은 보류했습니다.</p>
         </Card>
       )}
 

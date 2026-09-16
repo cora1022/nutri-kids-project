@@ -7,6 +7,13 @@ import { useApp } from '../../hooks/useApp';
 import { computeItemNutrients } from '../../utils/nutrition';
 import { NUTRIENT_META } from '../../data/goals';
 
+const QUALITY_LABEL = {
+  CONFIRMED: '식약처 확인',
+  ESTIMATED: '국가표준 추정',
+  MIXED: '일부 확인',
+  MISSING: '영양 미확인',
+};
+
 function AmountPicker({ food, onCancel, onConfirm }) {
   const [qty, setQty] = useState(1);
   const [error, setError] = useState('');
@@ -128,7 +135,8 @@ export default function SearchScreen() {
                     <span className="result-name">{food.name}</span>
                     <span className="result-meta">
                       {food.brand ? `${food.brand} · ` : ''}
-                      {food.servingLabel} · {food.nutrients.kcal}kcal
+                      {food.servingLabel} · {food.nutrients.kcal === null ? '열량 미확인' : `${Math.round(food.nutrients.kcal)}kcal`}
+                      {' · '}{QUALITY_LABEL[food.overallQuality] || '출처 미확인'}
                     </span>
                   </button>
                 ))

@@ -23,8 +23,9 @@ export default function NutrientBar({ label, unit, evalItem, kind }) {
       </div>
       <div className="nutrient-bar-bottom">
         <span>
-          {Math.round(value)}
-          {unit} {kind === 'upperLimit' ? '섭취' : '/'} {kind !== 'upperLimit' && `${Math.round(goal)}${unit} 목표`}
+          {value === null ? '미확인' : `${Math.round(value)}${unit}`}
+          {value !== null && ` ${kind === 'upperLimit' ? '섭취' : '/'}`}
+          {kind !== 'upperLimit' && ` ${Math.round(goal)}${unit} 목표`}
         </span>
         {kind === 'upperLimit' && <span className="nutrient-limit">상한 {Math.round(goal)}{unit}</span>}
         {evalItem.partial && <span className="nutrient-partial-note">일부 성분 미확인 포함</span>}
