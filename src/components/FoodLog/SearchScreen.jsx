@@ -136,6 +136,7 @@ export default function SearchScreen() {
                     <span className="result-meta">
                       {food.brand ? `${food.brand} · ` : ''}
                       {food.servingLabel} · {food.nutrients.kcal === null ? '열량 미확인' : `${Math.round(food.nutrients.kcal)}kcal`}
+                      {food.itemReportStatus && ` · ${food.itemReportStatus}`}
                       {' · '}{QUALITY_LABEL[food.overallQuality] || '출처 미확인'}
                     </span>
                   </button>
