@@ -12,6 +12,22 @@ import {
 } from '../utils/storage';
 import { addTotals, sumNutrients } from '../utils/nutrition';
 
+function createDraftMealId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const value = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    return `${value.slice(0, 8)}-${value.slice(8, 12)}-${value.slice(12, 16)}-${value.slice(16, 20)}-${value.slice(20)}`;
+  }
+
+  return `meal-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 function todayKey() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -22,7 +38,7 @@ export function AppProvider({ children }) {
   const [stage, setStage] = useState(() => (loadProfile() ? 'search' : 'welcome'));
   const [dateKey] = useState(todayKey());
   const [mealItems, setMealItems] = useState(() => loadDraftMeal(todayKey()));
-  const [draftMealId, setDraftMealId] = useState(() => crypto.randomUUID());
+  const [draftMealId, setDraftMealId] = useState(createDraftMealId);
   const [lastConfirmedMeal, setLastConfirmedMeal] = useState(null);
   const [dailyMeals, setDailyMeals] = useState(() => loadMealsByDate(todayKey()));
 
@@ -53,7 +69,7 @@ export function AppProvider({ children }) {
   function resetMealDraft() {
     setMealItems([]);
     clearDraftMeal(dateKey);
-    setDraftMealId(crypto.randomUUID());
+    setDraftMealId(createDraftMealId());
   }
 
   async function confirmMeal() {
