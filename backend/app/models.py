@@ -52,12 +52,18 @@ class Food(Base):
     barcode: Mapped[str | None] = mapped_column(String(32), unique=True, index=True)
     image_url: Mapped[str | None] = mapped_column(Text)
     item_report_no: Mapped[str | None] = mapped_column(String(64), index=True)
+    item_report_candidates: Mapped[list[str] | None] = mapped_column(JSON)
+    item_report_status: Mapped[str | None] = mapped_column(String(80))
+    item_report_evidence: Mapped[str | None] = mapped_column(Text)
     serving_amount: Mapped[Decimal | None] = mapped_column(Numeric(10, 3))
     serving_unit: Mapped[str | None] = mapped_column(String(20))
     count_unit: Mapped[str | None] = mapped_column(String(20))
     serving_label: Mapped[str | None] = mapped_column(String(100))
 
     nutrients: Mapped[list["FoodNutrient"]] = relationship(
+        back_populates="food", cascade="all, delete-orphan"
+    )
+    standard_mappings: Mapped[list["ProductStandardMapping"]] = relationship(
         back_populates="food", cascade="all, delete-orphan"
     )
 
@@ -84,6 +90,10 @@ class StandardFood(Base):
     food_group: Mapped[str | None] = mapped_column(String(120))
     nutrients_per_100g: Mapped[dict] = mapped_column(JSON)
 
+    product_mappings: Mapped[list["ProductStandardMapping"]] = relationship(
+        back_populates="standard_food"
+    )
+
 
 class ProductStandardMapping(Base):
     __tablename__ = "product_standard_mappings"
@@ -97,6 +107,9 @@ class ProductStandardMapping(Base):
     match_method: Mapped[str] = mapped_column(String(30))
     confidence: Mapped[Decimal] = mapped_column(Numeric(5, 4))
     review_status: Mapped[str] = mapped_column(String(20), default="PENDING")
+
+    food: Mapped[Food] = relationship(back_populates="standard_mappings")
+    standard_food: Mapped[StandardFood] = relationship(back_populates="product_mappings")
 
 
 class Meal(Base):

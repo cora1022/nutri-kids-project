@@ -14,6 +14,7 @@ from app.database import SessionLocal
 from app.main import app
 from app.models import Food, FoodNutrient
 from app.services.mfds import parse_food
+from app.services.standard_foods import estimate_serving, match_standard_food, normalize_product_name
 
 
 def test_health() -> None:
@@ -44,6 +45,57 @@ def test_mfds_response_parser_uses_declared_basis() -> None:
     })
     assert food.basis_amount == 100
     assert food.nutrients_per_basis == {"kcal": 420, "protein": 4, "sodium": 130}
+
+
+def test_standard_food_normalization_and_matching() -> None:
+    assert normalize_product_name("오뚜기)참깨라면110g") == "참깨라면"
+    rule = match_standard_food("오뚜기)참깨라면110g", "식품")
+    assert rule is not None
+    assert rule.food_code == "3142"
+
+
+def test_serving_estimate_uses_package_amount_or_standard_basis() -> None:
+    package = estimate_serving("서울)딸기우유300ml", "음료")
+    fallback = estimate_serving("샐)허니리코타치즈샐러드", "간편식사")
+    assert (package.amount, package.unit, package.from_product_name) == (300, "ml", True)
+    assert (fallback.amount, fallback.unit, fallback.from_product_name) == (100, "g", False)
+
+
+def test_food_search_promotes_first_similar_report_number() -> None:
+    with SessionLocal() as db:
+        db.add(Food(
+            id="cu:candidate", source_type="CU_PRODUCT", name="후보 상품", brand="CU",
+            category="간편식사", price=1800,
+            item_report_candidates=["202400000001", "202400000002"],
+            item_report_no="202400000001",
+            item_report_status="상품명 유사 자동 확정",
+            item_report_evidence="제품명 기준 후보. 복수 후보 중 첫 번째 번호를 대표값으로 자동 확정",
+        ))
+        db.commit()
+
+    with TestClient(app) as client:
+        response = client.get("/api/v1/foods", params={"query": "후보 상품"})
+
+    item = response.json()["items"][0]
+    assert item["itemReportNo"] == "202400000001"
+    assert item["itemReportCandidates"] == ["202400000001", "202400000002"]
+    assert item["itemReportStatus"] == "상품명 유사 자동 확정"
+
+
+def test_food_search_excludes_products_without_report_number() -> None:
+    with SessionLocal() as db:
+        db.add(Food(
+            id="cu:no-report", source_type="CU_PRODUCT", name="번호 없는 검색 상품",
+            brand="CU", category="간편식사", price=1500,
+        ))
+        db.commit()
+
+    with TestClient(app) as client:
+        response = client.get("/api/v1/foods", params={"query": "번호 없는 검색 상품"})
+
+    assert response.status_code == 200
+    assert response.json()["total"] == 0
+    assert response.json()["items"] == []
 
 
 def test_meal_analysis_preserves_missing_values() -> None:

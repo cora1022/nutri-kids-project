@@ -3,7 +3,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.database import get_db
-from app.models import Food
+from app.models import Food, ProductStandardMapping
 from app.schemas.common import NutrientQuality, NutrientSource, NutrientValue
 from app.schemas.food import FoodResponse, FoodSearchResponse, FoodSourceType, Serving
 
@@ -53,6 +53,16 @@ def to_response(food: Food) -> FoodResponse:
     else:
         overall = NutrientQuality.MIXED
 
+    mapping = food.standard_mappings[0] if food.standard_mappings else None
+    standard_match = None
+    if mapping:
+        standard_match = {
+            "food_code": mapping.standard_food_code,
+            "name": mapping.standard_food.name,
+            "match_method": mapping.match_method,
+            "confidence": float(mapping.confidence),
+        }
+
     return FoodResponse(
         id=food.id,
         source_type=FoodSourceType(food.source_type),
@@ -63,6 +73,9 @@ def to_response(food: Food) -> FoodResponse:
         barcode=food.barcode,
         image_url=food.image_url,
         item_report_no=food.item_report_no,
+        item_report_candidates=food.item_report_candidates or [],
+        item_report_status=food.item_report_status,
+        item_report_evidence=food.item_report_evidence,
         serving=Serving(
             amount=float(food.serving_amount) if food.serving_amount is not None else None,
             unit=food.serving_unit,
@@ -71,12 +84,17 @@ def to_response(food: Food) -> FoodResponse:
         ),
         nutrients=nutrients,
         overall_quality=overall,
-        standard_food_match=None,
+        standard_food_match=standard_match,
     )
 
 
 def food_query():
-    return select(Food).options(selectinload(Food.nutrients))
+    return select(Food).options(
+        selectinload(Food.nutrients),
+        selectinload(Food.standard_mappings).selectinload(
+            ProductStandardMapping.standard_food
+        ),
+    )
 
 
 @router.get("", response_model=FoodSearchResponse)
@@ -87,7 +105,7 @@ def search_foods(
     size: int = Query(default=20, ge=1, le=100),
     db: Session = Depends(get_db),
 ) -> FoodSearchResponse:
-    conditions = []
+    conditions = [Food.item_report_no.is_not(None)]
     if query.strip():
         pattern = f"%{query.strip()}%"
         conditions.append(or_(Food.name.like(pattern), Food.brand.like(pattern)))
@@ -127,4 +145,3 @@ def get_food(food_id: str, db: Session = Depends(get_db)) -> FoodResponse:
     if food is None:
         raise HTTPException(status_code=404, detail="등록된 상품을 찾을 수 없습니다.")
     return to_response(food)
-

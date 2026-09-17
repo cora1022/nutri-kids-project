@@ -34,6 +34,9 @@ class FoodResponse(APIModel):
     barcode: str | None = None
     image_url: str | None = None
     item_report_no: str | None = None
+    item_report_candidates: list[str] = Field(default_factory=list)
+    item_report_status: str | None = None
+    item_report_evidence: str | None = None
     serving: Serving
     nutrients: dict[str, NutrientValue]
     overall_quality: NutrientQuality
