@@ -1,0 +1,107 @@
+name: nutri-kids-production
+
+x-api-environment: &api-environment
+  DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}?charset=utf8mb4
+  CORS_ORIGINS: https://nutri.cora1022.com
+  AUTO_CREATE_TABLES: "true"
+  MFDS_SERVICE_KEY: ${MFDS_SERVICE_KEY:-}
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+services:
+  db:
+    image: mysql:8.4
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_PASSWORD mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --silent"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 12
+    restart: unless-stopped
+    logging: *logging
+
+  seed:
+    build: ./backend
+    command:
+      - python
+      - scripts/import_data.py
+      - --cu
+      - /data/cu-products.xlsx
+      - --standard
+      - /data/national-food-composition.xlsx
+    environment: *api-environment
+    volumes:
+      - ./deploy-data:/data:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    logging: *logging
+
+  api:
+    build: ./backend
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment: *api-environment
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 8
+    restart: unless-stopped
+    logging: *logging
+
+  frontend:
+    build:
+      context: .
+      args:
+        VITE_API_BASE_URL: /api/v1
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+    restart: unless-stopped
+    logging: *logging
+
+  caddy:
+    image: caddy:2.10-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+    restart: unless-stopped
+    logging: *logging
+
+volumes:
+  mysql_data:
+  caddy_data:
+  caddy_config:

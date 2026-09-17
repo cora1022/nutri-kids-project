@@ -1,0 +1,8 @@
+nutri.cora1022.com {
+    encode zstd gzip
+    reverse_proxy frontend:80
+}
+
+http://181.214.136.80 {
+    redir https://nutri.cora1022.com{uri} permanent
+}

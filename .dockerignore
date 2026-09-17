@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env
+.env.*
+backend/.env
+backend/.venv
+backend/__pycache__
+backend/nutrikids.db
+dist
+node_modules
+plan
+deploy-data
+*.log
