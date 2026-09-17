@@ -1,28 +1,32 @@
 :root {
-  --color-bg: #F5F8FB;
+  /* ---- Brand: warm purple + fresh lime (친근한 편의점 무드에서 참고) ---- */
+  --color-bg: #FBF8FF;
   --color-surface: #FFFFFF;
-  --color-text: #24313D;
-  --color-muted: #6B7785;
-  --color-primary: #FF6B35;
-  --color-primary-dark: #E24E17;
-  --color-primary-tint: #FFE7DB;
-  --color-secondary: #1F5B4C;
-  --color-line: #E2E8EE;
+  --color-text: #2B2140;
+  --color-muted: #837C99;
+  --color-primary: #7C3AED;
+  --color-primary-dark: #5B21B6;
+  --color-primary-tint: #F1E8FF;
+  --color-secondary: #7CB518;
+  --color-secondary-dark: #5C8A10;
+  --color-secondary-tint: #EEF7DB;
+  --color-line: #E9E2F7;
 
-  --status-ok: #2F9E64;
-  --status-ok-bg: #E6F6ED;
-  --status-deficient: #D9483C;
-  --status-deficient-bg: #FCEAE8;
-  --status-over: #C9871E;
-  --status-over-bg: #FBF0DC;
-  --status-unknown: #8C97A6;
-  --status-unknown-bg: #EEF1F4;
+  --status-ok: #5C9A1B;
+  --status-ok-bg: #EAF6D6;
+  --status-deficient: #E3543F;
+  --status-deficient-bg: #FDEAE6;
+  --status-over: #D98E1B;
+  --status-over-bg: #FCF0DA;
+  --status-unknown: #9088A6;
+  --status-unknown-bg: #F1EDF9;
 
-  --radius-md: 14px;
-  --radius-lg: 22px;
-  --shadow-card: 0 6px 20px rgba(36, 49, 61, 0.06);
+  --radius-md: 16px;
+  --radius-lg: 26px;
+  --shadow-card: 0 8px 24px rgba(124, 58, 237, 0.09);
+  --shadow-pop: 0 10px 26px rgba(124, 58, 237, 0.18);
 
-  font-family: 'Noto Sans KR', system-ui, sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   color: var(--color-text);
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
@@ -32,15 +36,23 @@
   box-sizing: border-box;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--color-bg);
+  background:
+    radial-gradient(480px 320px at 92% -8%, rgba(124, 58, 237, 0.10), transparent 60%),
+    radial-gradient(420px 280px at -10% 18%, rgba(124, 181, 24, 0.10), transparent 55%),
+    var(--color-bg);
 }
 
 h1, h2, h3 {
-  font-family: 'Jua', 'Noto Sans KR', sans-serif;
-  font-weight: 400;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.01em;
   line-height: 1.35;
   margin: 0;
 }
@@ -56,4 +68,9 @@ button {
 
 input {
   font-family: inherit;
+}
+
+::selection {
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
 }

@@ -31,11 +31,29 @@ function Stage() {
   }
 }
 
+function TopBar() {
+  return (
+    <div className="top-bar">
+      <div className="top-bar-brand">
+        <span className="top-bar-mark" aria-hidden="true">🍙</span>
+        <div>
+          <div className="top-bar-name">든든</div>
+          <div className="top-bar-tag">오늘 한 끼, 균형 잡게</div>
+        </div>
+      </div>
+      <span className="top-bar-chip">편의점 밥도 OK 👍</span>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <AppProvider>
-      <div className="app-shell">
-        <Stage />
+      <div className="app-outer">
+        <div className="app-shell">
+          <TopBar />
+          <Stage />
+        </div>
       </div>
     </AppProvider>
   );
