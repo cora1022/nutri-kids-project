@@ -71,6 +71,7 @@ services:
   frontend:
     build:
       context: .
+      dockerfile: frontend/Dockerfile
       args:
         VITE_API_BASE_URL: /api/v1
     depends_on:

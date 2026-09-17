@@ -8,6 +8,8 @@ backend/__pycache__
 backend/nutrikids.db
 dist
 node_modules
+frontend/dist
+frontend/node_modules
 plan
 deploy-data
 *.log

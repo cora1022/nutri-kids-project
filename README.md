@@ -17,6 +17,7 @@ docker compose up --build
 각 영역을 따로 실행할 수도 있습니다.
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
@@ -48,7 +49,7 @@ cd backend
 ## 구현 현황
 
 1. 기존 화면 흐름과 컴포넌트는 프론트 기준 UI로 유지했습니다.
-2. `src/services/foodApi.js`는 `/api/v1/foods` 계약을 호출합니다.
+2. `frontend/src/services/foodApi.js`는 `/api/v1/foods` 계약을 호출합니다.
 3. FastAPI의 상품 검색, 바코드 조회, 상품 상세 조회는 DB 데이터가 들어오면 바로 동작합니다.
 4. `/api/v1/meals/analyze`는 기존 JSON 계약을 유지하는 인수인계용 임시 엔진으로 구성했습니다. 실제 목표 계산, 영양소 판정과 추천 로직은 구현 예정입니다.
 5. 회원가입, 로그인, 프로필 저장, 식사 저장과 하루 평가는 아직 계약만 구성되어 있습니다.
@@ -56,11 +57,13 @@ cd backend
 ## 폴더 구조
 
 ```text
-src/                         React 프론트
-  components/                화면과 공용 UI
-  context/                   전역 상태
-  services/                  백엔드 API 호출
-  utils/                     기존 임시 계산과 로컬 저장
+frontend/                    React 프론트
+  public/                    정적 파일
+  src/
+    components/              화면과 공용 UI
+    context/                 전역 상태
+    services/                백엔드 API 호출
+    utils/                   기존 임시 계산과 로컬 저장
 backend/
   app/
     routers/                 API 엔드포인트
@@ -78,6 +81,7 @@ docker-compose.yml           프론트, API, MySQL 개발 환경
 ## 검증
 
 ```bash
+cd frontend
 npm run lint
 npm run build
 ```
