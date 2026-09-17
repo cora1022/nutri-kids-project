@@ -202,6 +202,7 @@
         <a href="#overview">전체 구조</a>
         <a href="#flow">요청 처리 흐름</a>
         <a href="#sources">데이터 결합 기준</a>
+        <a href="#pipeline">데이터 처리 과정</a>
         <a href="#api">API 목록</a>
         <a href="#algorithm">분석 알고리즘</a>
         <a href="#json">JSON 예시</a>
@@ -215,7 +216,7 @@
       <header class="hero">
         <p class="eyebrow">NUTRI KIDS BACKEND</p>
         <h1>상품을 찾고,<br>영양을 계산하는 서버</h1>
-        <p>React가 상품과 사용자 정보를 JSON으로 보내면 FastAPI가 CU 상품 DB, 식약처 정보, 국가표준식품성분표를 이용해 한 끼 영양 상태와 추천 상품을 계산합니다.</p>
+        <p>React가 상품과 사용자 정보를 JSON으로 보내면 FastAPI가 요청 형식을 검증하고 같은 JSON 응답 계약을 유지합니다. 한 끼 판정과 추천 알고리즘은 협업 담당자가 설계할 수 있도록 비워둔 상태입니다.</p>
         <div class="hero-actions">
           <a href="http://127.0.0.1:8000/docs">FastAPI 문서 열기</a>
           <a class="secondary" href="/">프론트 화면으로 돌아가기</a>
@@ -228,10 +229,10 @@
           <p>프론트는 입력과 표시를 담당하고, 백엔드는 데이터 조회와 계산 규칙을 한곳에서 관리합니다.</p>
         </div>
         <div class="summary-grid">
-          <div class="card summary"><b>5개</b><strong>CU 테스트 상품</strong><span>검색과 분석에 사용하는 소규모 데이터</span></div>
-          <div class="card summary"><b>7종</b><strong>핵심 영양소</strong><span>열량, 단백질, 칼슘, 철, 비타민 A와 C, 나트륨</span></div>
+          <div class="card summary"><b>1,092개</b><strong>CU 검색 상품</strong><span>품목제조보고번호가 있는 상품만 노출</span></div>
+          <div class="card summary"><b>73.2%</b><strong>영양 연결 비율</strong><span>검색 상품 중 국가표준 또는 식약처 값이 있는 비율</span></div>
           <div class="card summary"><b>3단계</b><strong>데이터 품질</strong><span>식약처 확인, 국가표준 추정, 미확인</span></div>
-          <div class="card summary"><b>3개</b><strong>추천 후보</strong><span>부족 영양소를 기준으로 상위 상품 반환</span></div>
+          <div class="card summary"><b>미구현</b><strong>영양 판정과 추천</strong><span>JSON 계약만 유지한 인수인계 상태</span></div>
         </div>
       </section>
 
@@ -243,8 +244,8 @@
           <div class="card flow-step"><span class="step-no">1</span><h3>React 요청</h3><p>프로필과 담은 상품을 JSON으로 전송</p></div>
           <div class="card flow-step"><span class="step-no">2</span><h3>FastAPI 검증</h3><p>필드, 나이, 섭취량, 단위를 검사</p></div>
           <div class="card flow-step"><span class="step-no">3</span><h3>DB 조회</h3><p>상품과 영양성분, 출처 상태를 조회</p></div>
-          <div class="card flow-step"><span class="step-no">4</span><h3>분석과 추천</h3><p>목표 비교 후 부족 성분 후보를 계산</p></div>
-          <div class="card flow-step"><span class="step-no">5</span><h3>JSON 응답</h3><p>판정, 품질, 경고, 추천을 반환</p></div>
+          <div class="card flow-step"><span class="step-no">4</span><h3>임시 엔진</h3><p>상품 존재 여부만 확인하고 미구현 상태 생성</p></div>
+          <div class="card flow-step"><span class="step-no">5</span><h3>JSON 응답</h3><p>UNKNOWN 판정과 구현 예정 경고를 반환</p></div>
         </div>
       </section>
 
@@ -256,16 +257,31 @@
         <div class="source-grid">
           <article class="card source confirmed">
             <span class="tag">CONFIRMED</span><h3>식약처 확인값</h3>
-            <ul><li>품목제조보고번호 또는 제품명으로 연결</li><li>API의 기준량을 실제 판매 용량으로 환산</li><li>현재 바나나킥의 열량, 단백질, 나트륨에 적용</li></ul>
+            <ul><li>API에서 확인된 품목제조보고번호만 확정값으로 저장</li><li>API의 기준량을 실제 판매 용량으로 환산</li><li>현재 바나나킥의 열량, 단백질, 나트륨에 적용</li></ul>
           </article>
           <article class="card source estimated">
             <span class="tag">ESTIMATED</span><h3>국가표준 추정값</h3>
-            <ul><li>제품과 유사한 표준 식품을 수동 매핑</li><li>100g 기준값을 상품 제공량으로 환산</li><li>바나나, 두유, 닭가슴살 테스트 상품에 적용</li></ul>
+            <ul><li>상품명 별칭과 CU 분류를 정규화해 대표 식품 연결</li><li>100g 기준값을 상품 제공량으로 환산</li><li>용량이 없으면 100g 또는 100ml 기준으로 표시</li></ul>
           </article>
           <article class="card source missing">
             <span class="tag">MISSING</span><h3>미확인값</h3>
-            <ul><li>안전하게 연결할 자료가 없으면 null 유지</li><li>0으로 바꾸거나 부족으로 단정하지 않음</li><li>해당 영양소 판정은 UNKNOWN으로 보류</li></ul>
+            <ul><li>1,092개 상품은 첫 번째 유사 번호를 자동 확정</li><li>번호가 있어도 영양값이 없으면 0으로 바꾸지 않음</li><li>해당 영양소 판정은 UNKNOWN으로 보류</li></ul>
           </article>
+        </div>
+      </section>
+
+      <section id="pipeline">
+        <div class="section-head">
+          <div><p class="eyebrow">DATA PIPELINE</p><h2>원천 파일이 영양값이 되는 과정</h2></div>
+          <p>대표 번호, 표준식품 연결, 제공량 환산과 출처 우선순위를 단계별로 적용합니다.</p>
+        </div>
+        <div class="flow">
+          <div class="card flow-step"><span class="step-no">1</span><h3>CU 상품 적재</h3><p>상품 ID, 이름, 가격, 이미지, 바코드와 번호 후보를 저장</p></div>
+          <div class="card flow-step"><span class="step-no">2</span><h3>상품명 정규화</h3><p>제조사와 용량을 분리하고 별칭과 특수문자를 통일</p></div>
+          <div class="card flow-step"><span class="step-no">3</span><h3>표준식품 연결</h3><p>정규화된 이름과 CU 분류로 국가표준 대표 식품 선택</p></div>
+          <div class="card flow-step"><span class="step-no">4</span><h3>기준량 환산</h3><p>100g 기준값을 판매 용량 또는 표준 100g 기준으로 계산</p></div>
+          <div class="card flow-step"><span class="step-no">5</span><h3>출처 병합</h3><p>식약처 확인값을 우선하고 없는 성분은 국가표준값 사용</p></div>
+          <div class="card flow-step"><span class="step-no">6</span><h3>API 반환</h3><p>영양값, 품질, 출처, 연결 식품과 신뢰도를 JSON으로 반환</p></div>
         </div>
       </section>
 
@@ -278,7 +294,7 @@
           <div class="endpoint"><b class="method">GET</b><code>/api/v1/foods?query=두유</code><span>상품명과 브랜드 검색</span><span class="state">구현</span></div>
           <div class="endpoint"><b class="method">GET</b><code>/api/v1/foods/barcode/{barcode}</code><span>바코드로 상품 조회</span><span class="state">구현</span></div>
           <div class="endpoint"><b class="method">GET</b><code>/api/v1/foods/{foodId}</code><span>상품 상세 조회</span><span class="state">구현</span></div>
-          <div class="endpoint"><b class="method post">POST</b><code>/api/v1/meals/analyze</code><span>목표 계산, 한 끼 평가, 상품 추천</span><span class="state">구현</span></div>
+          <div class="endpoint"><b class="method post">POST</b><code>/api/v1/meals/analyze</code><span>한 끼 분석 JSON 계약</span><span class="state todo">로직 예정</span></div>
           <div class="endpoint"><b class="method post">POST</b><code>/api/v1/auth/signup</code><span>회원가입</span><span class="state todo">예정</span></div>
           <div class="endpoint"><b class="method post">POST</b><code>/api/v1/meals</code><span>확정 식사 저장</span><span class="state todo">예정</span></div>
           <div class="endpoint"><b class="method">GET</b><code>/api/v1/meals/daily/{date}</code><span>하루 식사 합산</span><span class="state todo">예정</span></div>
@@ -287,24 +303,22 @@
 
       <section id="algorithm">
         <div class="section-head">
-          <div><p class="eyebrow">ALGORITHM</p><h2>한 끼 분석과 추천 규칙</h2></div>
+          <div><p class="eyebrow">ALGORITHM</p><h2>영양 로직 인수인계 상태</h2></div>
         </div>
         <div class="algorithm">
           <div class="card algo-list">
-            <div class="algo-row"><b>1</b><div><strong>하루 목표 선택</strong><p>성별과 나이 구간에 맞는 간이 목표표를 선택합니다.</p></div></div>
-            <div class="algo-row"><b>2</b><div><strong>한 끼 목표 계산</strong><p>하루 목표를 사용자가 입력한 하루 식사 횟수로 나눕니다.</p></div></div>
-            <div class="algo-row"><b>3</b><div><strong>섭취량 환산</strong><p>1회분, g, ml 입력을 상품 제공량 기준 배수로 변환합니다.</p></div></div>
-            <div class="algo-row"><b>4</b><div><strong>영양소 합산</strong><p>확인된 값만 합산하고 빠진 값이 있으면 품질을 MIXED로 표시합니다.</p></div></div>
-            <div class="algo-row"><b>5</b><div><strong>추천 점수 계산</strong><p>부족량 대비 후보 상품의 기여도를 계산하고 열량과 나트륨 조건을 적용합니다.</p></div></div>
+            <div class="algo-row"><b>1</b><div><strong>JSON 계약만 고정</strong><p>요청과 응답 스키마 외에는 미리 정한 코드 구조가 없습니다.</p></div></div>
+            <div class="algo-row"><b>2</b><div><strong>내부 설계는 자유</strong><p>계산 방식, 파일 구성과 내부 자료형은 담당자가 결정합니다.</p></div></div>
+            <div class="algo-row"><b>3</b><div><strong>임시 엔진 교체 가능</strong><p>공개 함수의 입출력만 유지하면 engine.py도 자유롭게 변경할 수 있습니다.</p></div></div>
           </div>
           <div class="card decision">
-            <h3>판정 기준</h3>
-            <div class="decision-line"><b>LOW</b><span>목표의 85% 미만</span></div>
-            <div class="decision-line"><b>ADEQUATE</b><span>목표의 85% 이상 130% 이하</span></div>
-            <div class="decision-line"><b>HIGH</b><span>목표의 130% 초과</span></div>
-            <div class="decision-line"><b>나트륨</b><span>한 끼 상한을 초과한 경우 HIGH</span></div>
-            <div class="decision-line"><b>UNKNOWN</b><span>선택 상품 중 해당 성분이 하나라도 누락된 경우</span></div>
-            <div class="decision-line"><b>추천 제외</b><span>남은 열량의 150%를 넘거나 나트륨 여유를 크게 초과한 상품</span></div>
+            <h3>현재 임시 응답</h3>
+            <div class="decision-line"><b>actual</b><span>null</span></div>
+            <div class="decision-line"><b>target</b><span>null</span></div>
+            <div class="decision-line"><b>status</b><span>UNKNOWN</span></div>
+            <div class="decision-line"><b>quality</b><span>MISSING</span></div>
+            <div class="decision-line"><b>recommendations</b><span>빈 배열</span></div>
+            <div class="decision-line"><b>warnings</b><span>NUTRITION_ENGINE_PENDING</span></div>
           </div>
         </div>
       </section>
@@ -362,10 +376,12 @@
           <div class="file"><code>backend/app/models.py</code><span>상품, 영양소, 사용자, 식사 테이블 정의</span></div>
           <div class="file"><code>backend/app/routers/foods.py</code><span>상품 검색, 바코드, 상세 API</span></div>
           <div class="file"><code>backend/app/routers/meals.py</code><span>한 끼 분석 API 진입점</span></div>
-          <div class="file"><code>backend/app/services/nutrition.py</code><span>목표량, 합산, 판정, 추천 핵심 로직</span></div>
+          <div class="file"><code>backend/app/services/nutrition/</code><span>JSON 계약 유지용 임시 엔진, 내부 구조는 담당자 설계</span></div>
           <div class="file"><code>backend/app/services/mfds.py</code><span>식약처 API 호출과 응답 변환</span></div>
+          <div class="file"><code>backend/app/services/standard_foods.py</code><span>상품명 정규화, 제공량 추출, 국가표준식품 연결</span></div>
           <div class="file"><code>backend/scripts/import_data.py</code><span>CU와 국가표준식품성분표 테스트 데이터 적재</span></div>
           <div class="file"><code>backend/tests/test_api.py</code><span>검색 계약, 식약처 파싱, 미확인 처리 테스트</span></div>
+          <div class="file"><code>docs/data-pipeline.md</code><span>원천 데이터부터 API 응답까지의 처리 과정</span></div>
         </div>
       </section>
 
@@ -375,7 +391,7 @@
         </div>
         <div class="card notice">
           <h3>공모전 프로토타입 기준입니다</h3>
-          <p>현재 상품 연결은 5개 테스트 상품에 대한 수동 매핑입니다. 두유는 테스트 단계에서 1ml를 1g으로 환산합니다. 키와 몸무게는 요청에 포함되지만 현재 목표표는 성별, 나이, 식사 횟수를 사용합니다. 회원 인증, 식사 영구 저장, 하루 평가는 다음 구현 범위입니다.</p>
+          <p>현재 표준식품 연결은 자동 규칙 기반 추정입니다. 용량이 없는 상품은 100g 또는 100ml 기준이며, 음료는 간이 환산을 사용합니다. 낮은 신뢰도의 분류 기본값은 검토가 필요합니다. 키와 몸무게는 요청에 포함되지만 현재 목표표는 성별, 나이, 식사 횟수를 사용합니다. 회원 인증, 식사 영구 저장, 하루 평가는 다음 구현 범위입니다.</p>
         </div>
       </section>
 
