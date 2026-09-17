@@ -98,16 +98,12 @@ def test_food_search_excludes_products_without_report_number() -> None:
     assert response.json()["items"] == []
 
 
-def test_meal_analysis_preserves_missing_values() -> None:
+def test_meal_analysis_returns_pending_contract() -> None:
     with SessionLocal() as db:
         db.add(Food(
             id="cu:test", source_type="CU_PRODUCT", name="테스트 상품", brand="테스트",
             category="식품", price=1000, serving_amount=100, serving_unit="g",
             count_unit="개", serving_label="100g",
-        ))
-        db.add(FoodNutrient(
-            food_id="cu:test", nutrient_key="kcal", value=100, unit="kcal",
-            quality="CONFIRMED", source="MFDS",
         ))
         db.commit()
 
@@ -121,11 +117,18 @@ def test_meal_analysis_preserves_missing_values() -> None:
     with TestClient(app) as client:
         response = client.post("/api/v1/meals/analyze", json=payload)
     assert response.status_code == 200
-    nutrients = response.json()["nutrients"]
-    assert nutrients["kcal"]["actual"] == 100
-    assert nutrients["protein"]["actual"] is None
-    assert nutrients["protein"]["status"] == "UNKNOWN"
-    assert nutrients["protein"]["quality"] == "MISSING"
+    body = response.json()
+    assert body["mealType"] == "LUNCH"
+    assert body["items"][0]["foodId"] == "cu:test"
+    assert body["totalPrice"] is None
+    assert body["recommendations"] == []
+    assert body["warnings"][0]["code"] == "NUTRITION_ENGINE_PENDING"
+    assert set(body["nutrients"]) == {
+        "kcal", "protein", "calcium", "iron", "vitaminA", "vitaminC", "sodium",
+    }
+    assert all(value["actual"] is None for value in body["nutrients"].values())
+    assert all(value["status"] == "UNKNOWN" for value in body["nutrients"].values())
+    assert all(value["quality"] == "MISSING" for value in body["nutrients"].values())
 
 
 def teardown_module() -> None:
