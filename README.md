@@ -91,4 +91,6 @@ cd backend
 .venv\Scripts\pytest -q
 ```
 
+PR을 만들거나 `main`에 푸시하면 GitHub Actions가 같은 검사를 자동으로 실행합니다. 프론트는 JavaScript와 TypeScript 중복 파일 검사, ESLint, 선택적 TypeScript 검사와 빌드를 진행합니다. 백엔드는 SQLite 환경에서 전체 pytest를 실행하고, 개발용과 운영용 Docker Compose 설정도 함께 확인합니다.
+
 API 계약의 기준은 [docs/api-contract.md](docs/api-contract.md)와 실행 중인 FastAPI `/docs`입니다. 원천 데이터가 검색과 영양 분석값으로 변환되는 과정은 [docs/data-pipeline.md](docs/data-pipeline.md)에서 확인합니다.
