@@ -158,3 +158,20 @@ def test_meal_analysis_uses_nutrition_engine() -> None:
 def teardown_module() -> None:
     engine.dispose()
     TEST_DB.unlink(missing_ok=True)
+
+
+def test_validation_error_uses_error_response_contract() -> None:
+    payload = {
+        "mealType": "LUNCH", "eatenAt": "2026-09-16T12:00:00+09:00",
+        "profile": {"sex": "MALE", "age": 6, "heightCm": 115,
+                    "weightKg": 20, "mealsPerDay": 3},
+        "items": [{"foodId": "cu:test", "quantity": 1, "quantityUnit": "SERVING"}],
+    }
+    with TestClient(app) as client:
+        response = client.post("/api/v1/meals/analyze", json=payload)
+    assert response.status_code == 422
+    body = response.json()
+    assert body["code"] == "VALIDATION_ERROR"
+    assert isinstance(body["message"], str)
+    assert "몸무게" in body["message"]
+    assert body["fieldErrors"][0]["field"] == "profile.weightKg"

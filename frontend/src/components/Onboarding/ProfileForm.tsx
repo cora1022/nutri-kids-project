@@ -6,6 +6,11 @@ import type { Gender } from '../../types';
 
 const MIN_AGE = 6;
 const MAX_AGE = 18;
+// 백엔드 AnalysisProfile 검증 범위와 같게 유지한다.
+const MIN_HEIGHT = 80;
+const MAX_HEIGHT = 230;
+const MIN_WEIGHT = 20;
+const MAX_WEIGHT = 250;
 
 interface FormState {
   gender: Gender;
@@ -52,7 +57,9 @@ export default function ProfileForm() {
     else if (age < MIN_AGE || age > MAX_AGE) next.age = `이 서비스는 ${MIN_AGE}~${MAX_AGE}세를 대상으로 해요`;
 
     if (!form.height || Number.isNaN(height) || height <= 0) next.height = '키를 정확히 입력해 주세요 (cm)';
+    else if (height <= MIN_HEIGHT || height > MAX_HEIGHT) next.height = `키는 ${MIN_HEIGHT}cm보다 크고 ${MAX_HEIGHT}cm 이하로 입력해 주세요`;
     if (!form.weight || Number.isNaN(weight) || weight <= 0) next.weight = '몸무게를 정확히 입력해 주세요 (kg)';
+    else if (weight <= MIN_WEIGHT || weight > MAX_WEIGHT) next.weight = `몸무게는 ${MIN_WEIGHT}kg보다 크고 ${MAX_WEIGHT}kg 이하로 입력해 주세요`;
     if (!form.mealsPerDay) next.mealsPerDay = '하루 식사 횟수를 선택해 주세요';
 
     setErrors(next);
