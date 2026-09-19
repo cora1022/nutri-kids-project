@@ -10,7 +10,7 @@ export default function DailySummaryScreen() {
   const { dailyTotals, dailyGoals, dailyMeals, setStage } = useApp();
 
   const evaluation = useMemo(
-    () => (dailyTotals ? evaluateNutrients(dailyTotals, dailyGoals) : null),
+    () => (dailyTotals && dailyGoals ? evaluateNutrients(dailyTotals, dailyGoals) : null),
     [dailyTotals, dailyGoals]
   );
 

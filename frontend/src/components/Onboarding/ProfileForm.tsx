@@ -1,15 +1,31 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import Button from '../common/Button';
 import { ScreenShell } from '../common/Card';
 import { useApp } from '../../hooks/useApp';
+import type { Gender } from '../../types';
 
 const MIN_AGE = 6;
 const MAX_AGE = 18;
 
+interface FormState {
+  gender: Gender;
+  age: string;
+  height: string;
+  weight: string;
+  mealsPerDay: string;
+}
+
+interface FormErrors {
+  age?: string;
+  height?: string;
+  weight?: string;
+  mealsPerDay?: string;
+}
+
 export default function ProfileForm() {
   const { profile, completeProfile, setStage } = useApp();
   const isEditing = Boolean(profile);
-  const [form, setForm] = useState(() =>
+  const [form, setForm] = useState<FormState>(() =>
     profile
       ? {
           gender: profile.gender,
@@ -20,14 +36,14 @@ export default function ProfileForm() {
         }
       : { gender: 'female', age: '', height: '', weight: '', mealsPerDay: '3' }
   );
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  function update(key, val) {
+  function update<K extends keyof FormState>(key: K, val: FormState[K]) {
     setForm((f) => ({ ...f, [key]: val }));
   }
 
-  function validate() {
-    const next = {};
+  function validate(): boolean {
+    const next: FormErrors = {};
     const age = Number(form.age);
     const height = Number(form.height);
     const weight = Number(form.weight);
@@ -43,7 +59,7 @@ export default function ProfileForm() {
     return Object.keys(next).length === 0;
   }
 
-  function handleSubmit(e) {
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!validate()) return;
     completeProfile({

@@ -1,7 +1,10 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 export class ApiError extends Error {
-  constructor(message, status, body = null) {
+  status: number;
+  body: unknown;
+
+  constructor(message: string, status: number, body: unknown = null) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
@@ -9,7 +12,12 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiFetch(path, options = {}) {
+interface ApiErrorBody {
+  message?: string;
+  detail?: string;
+}
+
+export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('nutrikids.accessToken');
   const headers = new Headers(options.headers || {});
   headers.set('Accept', 'application/json');
@@ -26,7 +34,7 @@ export async function apiFetch(path, options = {}) {
   });
 
   if (!response.ok) {
-    const body = await response.json().catch(() => null);
+    const body: ApiErrorBody | null = await response.json().catch(() => null);
     throw new ApiError(
       body?.message || body?.detail || '요청을 처리하지 못했어요.',
       response.status,
@@ -34,6 +42,6 @@ export async function apiFetch(path, options = {}) {
     );
   }
 
-  if (response.status === 204) return null;
-  return response.json();
+  if (response.status === 204) return null as T;
+  return response.json() as Promise<T>;
 }

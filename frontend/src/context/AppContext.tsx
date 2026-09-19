@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AppContext } from './appContextObject';
 import { getDailyGoals, getMealGoals } from '../data/goals';
 import {
@@ -11,8 +11,9 @@ import {
   saveProfile,
 } from '../utils/storage';
 import { addTotals, sumNutrients } from '../utils/nutrition';
+import type { AppContextValue, ConfirmedMeal, Food, MealItem, Profile, Stage } from '../types';
 
-function createDraftMealId() {
+function createDraftMealId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
@@ -28,19 +29,19 @@ function createDraftMealId() {
   return `meal-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function todayKey() {
+function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function AppProvider({ children }) {
-  const [profile, setProfile] = useState(() => loadProfile());
+export function AppProvider({ children }: { children: ReactNode }) {
+  const [profile, setProfile] = useState<Profile | null>(() => loadProfile());
   // stage: welcome | consent | profile | goals | search | evaluate | dailySummary
-  const [stage, setStage] = useState(() => (loadProfile() ? 'search' : 'welcome'));
+  const [stage, setStage] = useState<Stage>(() => (loadProfile() ? 'search' : 'welcome'));
   const [dateKey] = useState(todayKey());
-  const [mealItems, setMealItems] = useState(() => loadDraftMeal(todayKey()));
+  const [mealItems, setMealItems] = useState<MealItem[]>(() => loadDraftMeal(todayKey()));
   const [draftMealId, setDraftMealId] = useState(createDraftMealId);
-  const [lastConfirmedMeal, setLastConfirmedMeal] = useState(null);
-  const [dailyMeals, setDailyMeals] = useState(() => loadMealsByDate(todayKey()));
+  const [lastConfirmedMeal, setLastConfirmedMeal] = useState<ConfirmedMeal | null>(null);
+  const [dailyMeals, setDailyMeals] = useState<ConfirmedMeal[]>(() => loadMealsByDate(todayKey()));
 
   useEffect(() => {
     saveDraftMeal(dateKey, mealItems);
@@ -52,13 +53,13 @@ export function AppProvider({ children }) {
     [dailyGoals, profile]
   );
 
-  function completeProfile(newProfile) {
+  function completeProfile(newProfile: Profile) {
     setProfile(newProfile);
     saveProfile(newProfile);
     setStage('goals');
   }
 
-  function addFoodToMeal(food, qty) {
+  function addFoodToMeal(food: Food, qty: number) {
     setMealItems((prev) => [...prev, { food, qty, key: `${food.id}-${Date.now()}` }]);
   }
 
@@ -72,9 +73,9 @@ export function AppProvider({ children }) {
     setDraftMealId(createDraftMealId());
   }
 
-  async function confirmMeal() {
+  async function confirmMeal(): Promise<ConfirmedMeal> {
     const totals = sumNutrients(mealItems);
-    const record = {
+    const record: ConfirmedMeal = {
       clientMealId: draftMealId,
       dateKey,
       items: mealItems.map(({ food, qty }) => ({ foodId: food.id, name: food.name, qty })),
@@ -98,10 +99,13 @@ export function AppProvider({ children }) {
 
   const dailyTotals = useMemo(() => {
     if (dailyMeals.length === 0) return null;
-    return dailyMeals.reduce((acc, m) => (acc ? addTotals(acc, m.totals) : m.totals), null);
+    return dailyMeals.reduce<ReturnType<typeof sumNutrients> | null>(
+      (acc, m) => (acc ? addTotals(acc, m.totals) : m.totals),
+      null
+    );
   }, [dailyMeals]);
 
-  const value = {
+  const value: AppContextValue = {
     profile,
     stage,
     setStage,

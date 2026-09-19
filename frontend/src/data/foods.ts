@@ -1,3 +1,5 @@
+import type { Food, FoodCategory } from '../types';
+
 // ⚠️ 예시(placeholder) 데이터입니다.
 // 실제 서비스에서는 팀에서 다운로드한 "편의점 상품 DB"와
 // "일반 식품 영양성분 DB"를 백엔드가 검색 API로 내려주는 형태로 교체되어야 합니다.
@@ -8,12 +10,12 @@
 // vitaminA(µgRAE), vitaminC(mg), sodium(mg) — 1회 제공량(serving) 기준
 // 값이 없는 항목은 null 로 두어 "미확인" 처리가 되도록 합니다.
 
-export const FOOD_CATEGORY = {
+export const FOOD_CATEGORY: Record<'CVS' | 'GENERAL', FoodCategory> = {
   CVS: 'cvs', // 편의점 상품
   GENERAL: 'general', // 일반 식품
 };
 
-export const FOODS = [
+export const FOODS: Food[] = [
   {
     id: 'cvs-001',
     name: '삼각김밥 (참치마요)',
@@ -246,6 +248,6 @@ export const FOODS = [
   },
 ];
 
-export function getFoodById(id) {
+export function getFoodById(id: string): Food | null {
   return FOODS.find((f) => f.id === id) || null;
 }

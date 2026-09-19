@@ -47,6 +47,10 @@ jobs:
         working-directory: frontend
         run: npm run typecheck --if-present
 
+      - name: Test frontend
+        working-directory: frontend
+        run: npm test --if-present
+
       - name: Build frontend
         working-directory: frontend
         run: npm run build

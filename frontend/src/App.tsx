@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { AppProvider } from './context/AppContext';
 import { useApp } from './hooks/useApp';
+import SplashScreen from './components/common/SplashScreen';
 import WelcomeScreen from './components/Onboarding/WelcomeScreen';
 import ConsentScreen from './components/Onboarding/ConsentScreen';
 import ProfileForm from './components/Onboarding/ProfileForm';
@@ -35,20 +37,22 @@ function TopBar() {
   return (
     <div className="top-bar">
       <div className="top-bar-brand">
-        <span className="top-bar-mark" aria-hidden="true">🍙</span>
+        <img src="/logo.png" alt="든든" className="top-bar-mark" />
         <div>
           <div className="top-bar-name">든든</div>
           <div className="top-bar-tag">오늘 한 끼, 균형 잡게</div>
         </div>
       </div>
-      <span className="top-bar-chip">편의점 밥도 OK 👍</span>
     </div>
   );
 }
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
   return (
     <AppProvider>
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       <div className="app-outer">
         <div className="app-shell">
           <TopBar />

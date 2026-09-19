@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import Button from '../common/Button';
 import { Card, EmptyState, ScreenShell } from '../common/Card';
 import StageTracker from '../common/StageTracker';
@@ -6,19 +6,26 @@ import { searchFoods } from '../../services/foodApi';
 import { useApp } from '../../hooks/useApp';
 import { computeItemNutrients } from '../../utils/nutrition';
 import { NUTRIENT_META } from '../../data/goals';
+import type { Food, OverallQuality } from '../../types';
 
-const QUALITY_LABEL = {
+const QUALITY_LABEL: Record<OverallQuality, string> = {
   CONFIRMED: '식약처 확인',
   ESTIMATED: '국가표준 추정',
   MIXED: '일부 확인',
   MISSING: '영양 미확인',
 };
 
-function AmountPicker({ food, onCancel, onConfirm }) {
+interface AmountPickerProps {
+  food: Food;
+  onCancel: () => void;
+  onConfirm: (qty: number) => void;
+}
+
+function AmountPicker({ food, onCancel, onConfirm }: AmountPickerProps) {
   const [qty, setQty] = useState(1);
   const [error, setError] = useState('');
 
-  function step(delta) {
+  function step(delta: number) {
     setQty((q) => Math.max(0.5, Math.round((q + delta) * 2) / 2));
   }
 
@@ -54,7 +61,7 @@ function AmountPicker({ food, onCancel, onConfirm }) {
       <div className="nutrient-chip-row">
         {NUTRIENT_META.map(({ key, label, unit }) => (
           <span key={key} className={`nutrient-chip ${preview[key] === null ? 'unknown' : ''}`}>
-            {label} {preview[key] === null ? '미확인' : `${Math.round(preview[key])}${unit}`}
+            {label} {preview[key] === null ? '미확인' : `${Math.round(preview[key] as number)}${unit}`}
           </span>
         ))}
       </div>
@@ -72,11 +79,11 @@ function AmountPicker({ food, onCancel, onConfirm }) {
 export default function SearchScreen() {
   const { mealItems, addFoodToMeal, undoLastFood, setStage } = useApp();
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState(null); // null = 검색 전
-  const [selectedFood, setSelectedFood] = useState(null);
+  const [results, setResults] = useState<Food[] | null>(null); // null = 검색 전
+  const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [searching, setSearching] = useState(false);
 
-  async function handleSearch(e) {
+  async function handleSearch(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!query.trim()) return;
     setSearching(true);
@@ -85,11 +92,12 @@ export default function SearchScreen() {
     setSearching(false);
   }
 
-  function handlePick(food) {
+  function handlePick(food: Food) {
     setSelectedFood(food);
   }
 
-  function handleAmountConfirm(qty) {
+  function handleAmountConfirm(qty: number) {
+    if (!selectedFood) return;
     addFoodToMeal(selectedFood, qty);
     setSelectedFood(null);
     setResults(null);
@@ -134,10 +142,10 @@ export default function SearchScreen() {
                   <button key={food.id} className="result-row" onClick={() => handlePick(food)}>
                     <span className="result-name">{food.name}</span>
                     <span className="result-meta">
-                      {food.brand ? `${food.brand} · ` : ''}
-                      {food.servingLabel} · {food.nutrients.kcal === null ? '열량 미확인' : `${Math.round(food.nutrients.kcal)}kcal`}
-                      {food.itemReportStatus && ` · ${food.itemReportStatus}`}
-                      {' · '}{QUALITY_LABEL[food.overallQuality] || '출처 미확인'}
+                      {food.brand ? `${food.brand} / ` : ''}
+                      {food.servingLabel} / {food.nutrients.kcal == null ? '열량 미확인' : `${Math.round(food.nutrients.kcal)}kcal`}
+                      {food.itemReportStatus && ` / ${food.itemReportStatus}`}
+                      {' / '}{(food.overallQuality && QUALITY_LABEL[food.overallQuality]) || '출처 미확인'}
                     </span>
                   </button>
                 ))

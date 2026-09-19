@@ -6,12 +6,15 @@ import StageTracker from '../common/StageTracker';
 import { useApp } from '../../hooks/useApp';
 import { NUTRIENT_META } from '../../data/goals';
 import { analyzeMeal } from '../../services/mealApi';
+import type { MealAnalysis } from '../../types';
+
+type SaveState = 'idle' | 'saving' | 'error' | 'saved';
 
 export default function MealResultScreen() {
   const { mealItems, profile, setStage, confirmMeal, addFoodToMeal } = useApp();
-  const [saveState, setSaveState] = useState('idle'); // idle | saving | error | saved
+  const [saveState, setSaveState] = useState<SaveState>('idle');
   const [askDayDone, setAskDayDone] = useState(false);
-  const [analysis, setAnalysis] = useState(null);
+  const [analysis, setAnalysis] = useState<MealAnalysis | null>(null);
   const [analysisError, setAnalysisError] = useState('');
 
   useEffect(() => {
@@ -19,8 +22,10 @@ export default function MealResultScreen() {
     let active = true;
     analyzeMeal(profile, mealItems)
       .then((result) => active && setAnalysis(result))
-      .catch((error) => active && setAnalysisError(error.message));
-    return () => { active = false; };
+      .catch((error: Error) => active && setAnalysisError(error.message));
+    return () => {
+      active = false;
+    };
   }, [mealItems, profile]);
 
   // 1) 빈 식사
@@ -49,7 +54,7 @@ export default function MealResultScreen() {
     }
   }
 
-  function handleDayDone(isDone) {
+  function handleDayDone(isDone: boolean) {
     setAskDayDone(false);
     setStage(isDone ? 'dailySummary' : 'search');
   }
@@ -80,7 +85,11 @@ export default function MealResultScreen() {
   }
 
   if (!analysis) {
-    return <ScreenShell eyebrow="03 한 끼 평가" title="영양 정보를 계산하고 있어요" />;
+    return (
+      <ScreenShell eyebrow="03 한 끼 평가" title="영양 정보를 계산하고 있어요">
+        <p className="muted-line">잠시만 기다려주세요…</p>
+      </ScreenShell>
+    );
   }
 
   const { evaluation, recommendations, warnings } = analysis;
