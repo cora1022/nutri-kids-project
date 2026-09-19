@@ -98,13 +98,29 @@ def test_food_search_excludes_products_without_report_number() -> None:
     assert response.json()["items"] == []
 
 
-def test_meal_analysis_returns_pending_contract() -> None:
+def test_meal_analysis_uses_nutrition_engine() -> None:
     with SessionLocal() as db:
-        db.add(Food(
+        food = Food(
             id="cu:test", source_type="CU_PRODUCT", name="테스트 상품", brand="테스트",
             category="식품", price=1000, serving_amount=100, serving_unit="g",
             count_unit="개", serving_label="100g",
-        ))
+        )
+        db.add(food)
+        db.add_all([
+            FoodNutrient(food_id=food.id, nutrient_key=key, value=value, unit=unit,
+                         quality="CONFIRMED", source="MFDS")
+            for key, value, unit in [
+                ("kcal", 500, "kcal"),
+                ("protein", 20, "g"),
+                ("carbohydrate", 60, "g"),
+                ("calcium", 100, "mg"),
+                ("iron", 2, "mg"),
+                ("vitaminA", 200, "µgRAE"),
+                ("vitaminC", 20, "mg"),
+                ("vitaminD", 5, "µg"),
+                ("sodium", 500, "mg"),
+            ]
+        ])
         db.commit()
 
     payload = {
@@ -120,15 +136,23 @@ def test_meal_analysis_returns_pending_contract() -> None:
     body = response.json()
     assert body["mealType"] == "LUNCH"
     assert body["items"][0]["foodId"] == "cu:test"
-    assert body["totalPrice"] is None
+    assert body["totalPrice"] == 1000
     assert body["recommendations"] == []
-    assert body["warnings"][0]["code"] == "NUTRITION_ENGINE_PENDING"
+    assert body["warnings"][0]["code"] == "REFERENCE_VERSION"
     assert set(body["nutrients"]) == {
-        "kcal", "protein", "calcium", "iron", "vitaminA", "vitaminC", "sodium",
+        "kcal", "protein", "carbohydrate", "calcium", "iron",
+        "vitaminA", "vitaminC", "vitaminD", "sodium",
     }
-    assert all(value["actual"] is None for value in body["nutrients"].values())
-    assert all(value["status"] == "UNKNOWN" for value in body["nutrients"].values())
-    assert all(value["quality"] == "MISSING" for value in body["nutrients"].values())
+    assert body["nutrients"]["kcal"]["actual"] == 500
+    assert body["nutrients"]["kcal"]["status"] == "LOW"
+    assert body["nutrients"]["protein"]["target"] == 16.67
+    assert body["nutrients"]["protein"]["status"] == "ADEQUATE"
+    assert body["nutrients"]["vitaminD"]["status"] == "ADEQUATE"
+    assert body["nutrients"]["iron"]["target"] is None
+    assert body["nutrients"]["iron"]["status"] == "UNKNOWN"
+    assert body["nutrients"]["sodium"]["target"] is None
+    assert body["nutrients"]["sodium"]["status"] == "UNKNOWN"
+    assert all(value["quality"] == "CONFIRMED" for value in body["nutrients"].values())
 
 
 def teardown_module() -> None:
