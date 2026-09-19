@@ -69,8 +69,8 @@ python -m venv .venv
 ```powershell
 cd backend
 .venv\Scripts\python.exe scripts\import_data.py `
-  --cu "C:\Users\70sou\Documents\카카오톡 받은 파일\CU_식품음료_상품목록_2차수정.xlsx" `
-  --standard "C:\Users\70sou\Downloads\식품성분표(10개정판).xlsx"
+  --cu "path\to\CU_식품음료_상품목록_2차수정.xlsx" `
+  --standard "path\to\식품성분표(10개정판).xlsx"
 ```
 
 엑셀의 품목제조보고번호 후보가 있으면 첫 번째 후보를 `itemReportNo`로 자동 확정합니다. 전체 후보는 `itemReportCandidates`에 유지하고, 자동 확정 여부와 근거는 `itemReportStatus`, `itemReportEvidence`로 반환합니다. 상품 검색은 품목제조보고번호가 있는 상품만 반환합니다.
@@ -79,11 +79,12 @@ cd backend
 
 ## 구현 현황
 
-1. 기존 화면 흐름과 컴포넌트는 프론트 기준 UI로 유지했습니다.
+1. 프론트엔드는 TypeScript 기반 React 화면으로 구성되어 있습니다.
 2. `frontend/src/services/foodApi.ts`는 `/api/v1/foods` 계약을 호출합니다.
-3. FastAPI의 상품 검색, 바코드 조회, 상품 상세 조회는 DB 데이터가 들어오면 바로 동작합니다.
-4. `/api/v1/meals/analyze`는 기존 JSON 계약을 유지하는 인수인계용 임시 엔진으로 구성했습니다. 실제 목표 계산, 영양소 판정과 추천 로직은 구현 예정입니다.
-5. 회원가입, 로그인, 프로필 저장, 식사 저장과 하루 평가는 아직 계약만 구성되어 있습니다.
+3. FastAPI는 상품 검색, 바코드 조회, 상품 상세 조회와 식사 분석 API를 제공합니다.
+4. `/api/v1/meals/analyze`는 프로필 기반 목표 계산, 섭취량 환산, 영양 상태 판정과 보완 상품 추천을 수행합니다.
+5. 철분과 나트륨은 현재 적용한 기준 범위에서 제외하고 실제 섭취량만 반환합니다.
+6. 회원가입, 로그인, 프로필 저장, 식사 저장과 하루 평가는 아직 계약만 구성되어 있습니다.
 
 ## 폴더 구조
 
@@ -94,26 +95,31 @@ frontend/                    React 프론트
     components/              화면과 공용 UI
     context/                 전역 상태
     services/                백엔드 API 호출
-    utils/                   기존 임시 계산과 로컬 저장
+    utils/                   영양 합산과 로컬 저장
 backend/
   app/
     routers/                 API 엔드포인트
     schemas/                 프론트와 공유할 JSON 계약
-    services/nutrition/      영양 계산 인수인계 경계와 임시 엔진
+    services/nutrition/      영양 목표, 판정과 추천 로직
     models.py                MySQL 테이블 모델
   scripts/                   원천 데이터 적재 진입점
   tests/                     API 계약 테스트
 docs/
   api-contract.md            프론트와 백엔드 계약 문서
   data-pipeline.md           원천 데이터 정규화와 영양값 생성 과정
+logic_design.md              서비스 흐름과 예외 처리 설계
 docker-compose.yml           프론트, API, MySQL 개발 환경
 ```
+
+영양 계산의 근거, 공식과 예시는 [Algorithm.md](backend/app/services/nutrition/Algorithm.md)에서 확인할 수 있습니다.
 
 ## 검증
 
 ```bash
 cd frontend
 npm run lint
+npm run typecheck
+npm test
 npm run build
 ```
 
@@ -122,6 +128,6 @@ cd backend
 .venv\Scripts\pytest -q
 ```
 
-PR을 만들거나 `main`에 푸시하면 GitHub Actions가 같은 검사를 자동으로 실행합니다. 프론트는 JavaScript와 TypeScript 중복 파일 검사, ESLint, TypeScript 타입 검사와 빌드를 진행합니다. 백엔드는 SQLite 환경에서 전체 pytest를 실행하고, 개발용과 운영용 Docker Compose 설정도 함께 확인합니다.
+PR을 만들거나 `main`에 푸시하면 GitHub Actions가 같은 검사를 자동으로 실행합니다. 프론트는 JavaScript와 TypeScript 중복 파일 검사, ESLint, TypeScript 타입 검사, 단위 테스트와 빌드를 진행합니다. 백엔드는 SQLite 환경에서 전체 pytest를 실행하고, 개발용과 운영용 Docker Compose 설정도 함께 확인합니다.
 
 API 계약의 기준은 [docs/api-contract.md](docs/api-contract.md)와 실행 중인 FastAPI `/docs`입니다. 원천 데이터가 검색과 영양 분석값으로 변환되는 과정은 [docs/data-pipeline.md](docs/data-pipeline.md)에서 확인합니다.
