@@ -1,12 +1,14 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import models  # noqa: F401
 from app.config import settings
 from app.database import Base, engine
 from app.routers import auth, foods, health, meals, users
+from app.routers.errors import validation_error_handler
 
 
 @asynccontextmanager
@@ -22,6 +24,7 @@ app = FastAPI(
     description="든든 프론트와 연결할 JSON API 계약 골격",
     lifespan=lifespan,
 )
+app.add_exception_handler(RequestValidationError, validation_error_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
