@@ -8,7 +8,7 @@ export default function GoalsSummary() {
 
   if (!dailyGoals || !mealGoals || !profile) {
     return (
-      <ScreenShell eyebrow="01 가입 · 목표 설정" title="정보를 먼저 입력해 주세요">
+      <ScreenShell eyebrow="01 가입 및 목표 설정" title="정보를 먼저 입력해 주세요">
         <Button onClick={() => setStage('profile')}>정보 입력하러 가기</Button>
       </ScreenShell>
     );
@@ -16,9 +16,9 @@ export default function GoalsSummary() {
 
   return (
     <ScreenShell
-      eyebrow="01 가입 · 목표 설정"
+      eyebrow="01 가입 및 목표 설정"
       title="오늘의 목표를 계산했어요"
-      subtitle={`${profile.age}세 · ${profile.gender === 'female' ? '여자' : '남자'} 기준, 하루 ${profile.mealsPerDay}끼로 배분`}
+      subtitle={`${profile.age}세, ${profile.gender === 'female' ? '여자' : '남자'} 기준, 하루 ${profile.mealsPerDay}끼로 배분`}
     >
       <Card tone="muted">
         <div className="goals-grid">
@@ -26,18 +26,27 @@ export default function GoalsSummary() {
             <div key={key} className="goal-row">
               <span className="goal-label">{label}</span>
               <span className="goal-values">
-                <b>{Math.round(mealGoals[key])}{unit}</b>
-                <em>/ 한 끼</em>
-                <span className="goal-daily">
-                  (하루 {kind === 'upperLimit' ? '상한' : '목표'} {Math.round(dailyGoals[key])}{unit})
-                </span>
+                {mealGoals[key] === null ? (
+                  <b>평가 기준 미설정</b>
+                ) : (
+                  <>
+                    <b>{Math.round(mealGoals[key])}{unit}</b>
+                    <em>/ 한 끼</em>
+                    <span className="goal-daily">
+                      (하루 {kind === 'adequateIntake' ? '충분섭취량' : '목표'}{' '}
+                      {Math.round(dailyGoals[key] as number)}{unit})
+                    </span>
+                  </>
+                )}
               </span>
             </div>
           ))}
         </div>
       </Card>
       <p className="fine-print">
-        나트륨은 “상한”이라 이 값을 넘지 않는 게 목표예요. 나머지는 이 값에 가까울수록 좋아요.
+        열량은 나이, 성별, 키, 몸무게와 저활동 기준으로 계산했어요. 탄수화물은 권장 범위의
+        중간값이며, 한 끼 수치는 하루 기준을 식사 횟수로 균등하게 나눈 서비스용 목표예요.
+        현재 근거 범위에서 제외한 철분과 나트륨은 임의의 수치를 표시하지 않아요.
       </p>
       <Button size="lg" fullWidth onClick={() => setStage('search')}>
         오늘 먹은 음식 입력하러 가기

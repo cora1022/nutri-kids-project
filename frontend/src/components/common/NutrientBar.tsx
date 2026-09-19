@@ -15,8 +15,9 @@ interface NutrientBarProps {
 }
 
 export default function NutrientBar({ label, unit, evalItem, kind }: NutrientBarProps) {
-  const { status, value, goal, ratio } = evalItem;
+  const { status, value, goal, upperLimit, ratio } = evalItem;
   const pct = ratio === null ? 0 : Math.min(ratio * 100, 130);
+  const goalLabel = kind === 'adequateIntake' ? '충분섭취량' : '한 끼 목표';
 
   return (
     <div className={`nutrient-bar status-${status}`}>
@@ -26,15 +27,17 @@ export default function NutrientBar({ label, unit, evalItem, kind }: NutrientBar
       </div>
       <div className="nutrient-track">
         <div className="nutrient-fill" style={{ width: `${pct}%` }} />
-        {kind === 'target' && <div className="nutrient-goal-mark" style={{ left: '100%' }} />}
+        {goal !== null && <div className="nutrient-goal-mark" style={{ left: '100%' }} />}
       </div>
       <div className="nutrient-bar-bottom">
         <span>
           {value === null ? '미확인' : `${Math.round(value)}${unit}`}
-          {value !== null && ` ${kind === 'upperLimit' ? '섭취' : '/'}`}
-          {kind !== 'upperLimit' && ` ${Math.round(goal)}${unit} 목표`}
+          {goal !== null && ` / ${Math.round(goal)}${unit} ${goalLabel}`}
+          {goal === null && ' / 평가 기준 미설정'}
         </span>
-        {kind === 'upperLimit' && <span className="nutrient-limit">상한 {Math.round(goal)}{unit}</span>}
+        {upperLimit !== null && upperLimit !== undefined && (
+          <span className="nutrient-limit">하루 상한 {Math.round(upperLimit)}{unit}</span>
+        )}
         {evalItem.partial && <span className="nutrient-partial-note">일부 성분 미확인 포함</span>}
       </div>
     </div>

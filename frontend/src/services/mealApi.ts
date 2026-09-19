@@ -1,6 +1,14 @@
 import { apiFetch } from './apiClient';
 import { toUiFood, type BackendFood } from './foodApi';
-import type { Evaluation, EvaluationStatus, MealAnalysis, MealItem, NutrientKey, Profile } from '../types';
+import type {
+  AnalysisWarning,
+  Evaluation,
+  EvaluationStatus,
+  MealAnalysis,
+  MealItem,
+  NutrientKey,
+  Profile,
+} from '../types';
 
 const STATUS_MAP: Record<string, EvaluationStatus> = {
   LOW: 'deficient',
@@ -12,8 +20,8 @@ const STATUS_MAP: Record<string, EvaluationStatus> = {
 interface BackendNutrientResult {
   status: keyof typeof STATUS_MAP;
   actual: number | null;
-  target?: number;
-  upperLimit?: number;
+  target?: number | null;
+  upperLimit?: number | null;
   ratio: number | null;
   quality?: string;
 }
@@ -27,7 +35,7 @@ interface BackendRecommendation {
 interface AnalyzeMealResponse {
   nutrients: Record<NutrientKey, BackendNutrientResult>;
   recommendations: BackendRecommendation[];
-  warnings: string[];
+  warnings: AnalysisWarning[];
 }
 
 export async function analyzeMeal(profile: Profile, mealItems: MealItem[]): Promise<MealAnalysis> {
@@ -58,7 +66,8 @@ export async function analyzeMeal(profile: Profile, mealItems: MealItem[]): Prom
       {
         status: STATUS_MAP[value.status],
         value: value.actual,
-        goal: value.target ?? value.upperLimit ?? 0,
+        goal: value.target ?? null,
+        upperLimit: value.upperLimit ?? null,
         ratio: value.ratio,
         partial: value.quality === 'MIXED',
         quality: value.quality,

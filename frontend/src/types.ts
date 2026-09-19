@@ -1,13 +1,15 @@
 export type NutrientKey =
   | 'kcal'
   | 'protein'
+  | 'carbohydrate'
   | 'calcium'
   | 'iron'
   | 'vitaminA'
   | 'vitaminC'
+  | 'vitaminD'
   | 'sodium';
 
-export type NutrientKind = 'target' | 'upperLimit';
+export type NutrientKind = 'target' | 'adequateIntake' | 'unassessed';
 
 export interface NutrientMetaEntry {
   key: NutrientKey;
@@ -16,7 +18,7 @@ export interface NutrientMetaEntry {
   kind: NutrientKind;
 }
 
-export type NutrientValues = Record<NutrientKey, number | null>;
+export type NutrientValues = Partial<Record<NutrientKey, number | null>>;
 
 export type FoodCategory = 'cvs' | 'general';
 
@@ -69,14 +71,15 @@ export interface NutrientTotal {
 
 export type Totals = Record<NutrientKey, NutrientTotal>;
 
-export type Goals = Record<NutrientKey, number>;
+export type Goals = Record<NutrientKey, number | null>;
 
 export type EvaluationStatus = 'deficient' | 'ok' | 'over' | 'unknown';
 
 export interface EvaluationItem {
   status: EvaluationStatus;
   value: number | null;
-  goal: number;
+  goal: number | null;
+  upperLimit?: number | null;
   ratio: number | null;
   partial?: boolean;
   quality?: string;
@@ -109,11 +112,17 @@ export interface RecommendationResult {
   reason: string | null;
 }
 
+export interface AnalysisWarning {
+  code: string;
+  message: string;
+  foodId?: string | null;
+}
+
 /** 백엔드 /meals/analyze 응답을 UI용으로 옮긴 형태 */
 export interface MealAnalysis {
   evaluation: Evaluation;
   recommendations: RecommendationCandidate[];
-  warnings: string[];
+  warnings: AnalysisWarning[];
 }
 
 export type Stage =

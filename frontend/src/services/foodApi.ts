@@ -4,10 +4,12 @@ import type { Food, NutrientKey, NutrientValues } from '../types';
 const NUTRIENT_KEYS: NutrientKey[] = [
   'kcal',
   'protein',
+  'carbohydrate',
   'calcium',
   'iron',
   'vitaminA',
   'vitaminC',
+  'vitaminD',
   'sodium',
 ];
 
