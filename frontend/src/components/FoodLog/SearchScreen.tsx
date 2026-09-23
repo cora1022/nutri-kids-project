@@ -10,7 +10,7 @@ import type { Food, OverallQuality } from '../../types';
 
 const QUALITY_LABEL: Record<OverallQuality, string> = {
   CONFIRMED: '식약처 확인',
-  ESTIMATED: '국가표준 추정',
+  ESTIMATED: '농촌진흥청 국가표준식품성분 DB',
   MIXED: '일부 확인',
   MISSING: '영양 미확인',
 };
@@ -144,7 +144,7 @@ export default function SearchScreen() {
                     <span className="result-meta">
                       {food.brand ? `${food.brand} / ` : ''}
                       {food.servingLabel} / {food.nutrients.kcal == null ? '열량 미확인' : `${Math.round(food.nutrients.kcal)}kcal`}
-                      {food.itemReportStatus && ` / ${food.itemReportStatus}`}
+                      {food.itemReportStatus && food.itemReportStatus !== '상품명 유사 자동 확정' && ` / ${food.itemReportStatus}`}
                       {' / '}{(food.overallQuality && QUALITY_LABEL[food.overallQuality]) || '출처 미확인'}
                     </span>
                   </button>

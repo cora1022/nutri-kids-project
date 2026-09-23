@@ -92,7 +92,7 @@ export default function MealResultScreen() {
     );
   }
 
-  const { evaluation, recommendations, warnings } = analysis;
+  const { evaluation, recommendations } = analysis;
   const deficientKeys = NUTRIENT_META.filter(({ key }) => evaluation[key]?.status === 'deficient').map(({ key }) => key);
 
   return (
@@ -133,12 +133,6 @@ export default function MealResultScreen() {
               ))}
             </div>
           )}
-        </Card>
-      )}
-
-      {warnings.length > 0 && (
-        <Card tone="muted">
-          <p className="muted-line">미확인 성분은 0으로 계산하지 않았으며 해당 판정은 보류했습니다.</p>
         </Card>
       )}
 

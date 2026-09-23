@@ -57,6 +57,7 @@ export default function App() {
         <div className="app-shell">
           <TopBar />
           <Stage />
+          <footer className="data-source">자료 출처: 농촌진흥청 국가표준식품성분</footer>
         </div>
       </div>
     </AppProvider>
