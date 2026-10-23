@@ -1,16 +1,48 @@
+![든든 — 오늘 한 끼, 균형 잡게](docs/images/readme-hero.png)
+
 # 든든 (nutri-kids)
 
 결식아동이 편의점에서 식품을 선택할 때 영양성분을 확인하고, 부족한 영양소를 보완할 수 있도록 돕는 서비스입니다.
 
+먹은 음식과 섭취량을 입력하면 한 끼 영양 목표와 비교해 결과를 보여주고, 부족한 영양소를 보완할 상품을 추천합니다.
+
+[든든 사용해보기](https://nutri.cora1022.com)
+
 > 본 프로젝트는 농촌진흥청과 대한지역사회영양학회가 주최한
 > 「2026 국가표준식품성분 DB 활용 아이디어 공모전」 출품작입니다.
+
+## 실행 화면
+
+서비스는 **목표 설정 → 음식 입력 → 한 끼 평가와 추천** 순서로 진행됩니다. 아래는 목표를 설정한 뒤 상품을 검색하고 평가 결과를 확인하는 실제 실행 화면입니다. 화면 일부를 잘라 주요 내용을 담았습니다.
+
+### 상품 검색과 섭취량 입력
+
+먹은 음식을 상품명으로 검색하고, 영양성분과 추정 기준을 확인합니다. 먹은 양을 조절한 뒤 한 끼에 담습니다.
+
+<p align="center">
+  <img src="docs/images/food-search-cropped.png" alt="상품명으로 먹은 음식을 검색하는 화면" width="42%" align="top">
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/images/food-portion.png" alt="영양성분을 확인하고 섭취량을 조절하는 화면" width="42%" align="top">
+</p>
+
+### 한 끼 평가와 추천
+
+한 끼 목표와 섭취량을 비교해 영양소별 상태를 확인합니다. 부족한 영양소를 보완할 상품을 보고 음식을 추가하거나 식사를 확정할 수 있습니다.
+
+<p align="center">
+  <img src="docs/images/meal-analysis-cropped.png" alt="한 끼 목표와 영양소별 섭취량을 비교한 평가 화면" width="42%" align="top">
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/images/food-recommendations.png" alt="부족한 영양소를 보완할 상품을 추천하는 화면" width="42%" align="top">
+</p>
+
+영양값이 없는 항목은 `미확인` 또는 `확인 필요`로 표시합니다. 상품 용량으로 환산한 추정값과 100g 기준 추정값도 화면에서 구분합니다.
 
 ## 공모전 출품 정보
 
 - 출품 분야: 현장활용 분야, 실물제작형
 - 출품 상태: 2026년 9월 기준 출품 직전
 - 활용 데이터: 농촌진흥청 국가표준식품성분 DB
-- 서비스 주소: https://nutri.cora1022.com
+- 서비스 주소: [nutri.cora1022.com](https://nutri.cora1022.com)
 
 ## 팀 구성
 
@@ -105,6 +137,7 @@ backend/
   scripts/                   원천 데이터 적재 진입점
   tests/                     API 계약 테스트
 docs/
+  images/                   README 배너와 실제 실행 화면
   api-contract.md            프론트와 백엔드 계약 문서
   data-pipeline.md           원천 데이터 정규화와 영양값 생성 과정
 logic_design.md              서비스 흐름과 예외 처리 설계
