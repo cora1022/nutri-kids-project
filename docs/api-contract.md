@@ -29,8 +29,10 @@
 | 기능 | 메서드와 경로 | 상태 |
 | --- | --- | --- |
 | 상태 확인 | `GET /api/v1/health` | 구현 |
-| 회원가입 | `POST /api/v1/auth/signup` | 계약만 구성 |
-| 로그인 | `POST /api/v1/auth/login` | 계약만 구성 |
+| 로그인 설정 | `GET /api/v1/auth/config` | 구현 |
+| 구글 로그인 | `GET /api/v1/auth/google/login?consent=true` | OAuth 설정 필요 |
+| 구글 콜백 | `GET /api/v1/auth/google/callback` | 구현 |
+| 로그아웃 | `POST /api/v1/auth/logout` | 구현 |
 | 내 프로필 | `GET /api/v1/users/me` | 계약만 구성 |
 | 프로필 저장 | `PUT /api/v1/users/me/profile` | 계약만 구성 |
 | 상품 검색 | `GET /api/v1/foods` | 구현 |
@@ -149,3 +151,5 @@ GET /api/v1/foods?query=삼각김밥&sourceType=CU_PRODUCT&page=1&size=20
   "requestId": "req_01K5MNOP"
 }
 ```
+
+구글 콜백에서 HttpOnly 세션 쿠키를 발급합니다. 기존 비밀번호 가입과 로그인 계약은 구글 로그인 경로로 대체했습니다.

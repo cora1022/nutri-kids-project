@@ -1,8 +1,11 @@
 from contextlib import asynccontextmanager
+import secrets
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.requests import Request
 
 from app import models  # noqa: F401
 from app.config import settings
@@ -32,6 +35,27 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.oauth_session_secret or secrets.token_urlsafe(32),
+    session_cookie="nutrikids_oauth",
+    max_age=600,
+    same_site="lax",
+    https_only=settings.cookie_secure,
+)
+
+
+@app.middleware("http")
+async def private_response_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "same-origin"
+    if any(request.url.path.startswith(f"{settings.api_prefix}/{prefix}")
+           for prefix in ("auth", "users", "meals")):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
 
 app.include_router(health.router, prefix=settings.api_prefix)
 app.include_router(auth.router, prefix=settings.api_prefix)
