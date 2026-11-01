@@ -40,6 +40,23 @@ class Profile(Base):
     user: Mapped[User] = relationship(back_populates="profile")
 
 
+class GoogleAccount(Base):
+    __tablename__ = "google_accounts"
+
+    subject: Mapped[str] = mapped_column(String(255), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), unique=True)
+    consent_version: Mapped[str] = mapped_column(String(30))
+    consented_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class LoginSession(Base):
+    __tablename__ = "login_sessions"
+
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+
+
 class Food(Base):
     __tablename__ = "foods"
 

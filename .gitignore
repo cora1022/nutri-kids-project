@@ -34,3 +34,6 @@ backend/.env
 
 # Local environment
 .env
+.env.production
+deploy-data/
+client_secret_*.json
