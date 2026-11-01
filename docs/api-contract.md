@@ -33,8 +33,8 @@
 | 구글 로그인 | `GET /api/v1/auth/google/login?consent=true` | OAuth 설정 필요 |
 | 구글 콜백 | `GET /api/v1/auth/google/callback` | 구현 |
 | 로그아웃 | `POST /api/v1/auth/logout` | 구현 |
-| 내 프로필 | `GET /api/v1/users/me` | 계약만 구성 |
-| 프로필 저장 | `PUT /api/v1/users/me/profile` | 계약만 구성 |
+| 내 프로필 | `GET /api/v1/users/me` | 구현, 로그인 필요 |
+| 프로필 저장 | `PUT /api/v1/users/me/profile` | 구현, 로그인 필요 |
 | 상품 검색 | `GET /api/v1/foods` | 구현 |
 | 바코드 조회 | `GET /api/v1/foods/barcode/{barcode}` | 구현 |
 | 상품 상세 | `GET /api/v1/foods/{foodId}` | 구현 |
@@ -153,3 +153,5 @@ GET /api/v1/foods?query=삼각김밥&sourceType=CU_PRODUCT&page=1&size=20
 ```
 
 구글 콜백에서 HttpOnly 세션 쿠키를 발급합니다. 기존 비밀번호 가입과 로그인 계약은 구글 로그인 경로로 대체했습니다.
+
+프로필 응답은 user, profile, goals를 반환합니다. 첫 로그인 직후 profile과 goals는 null입니다.

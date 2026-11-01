@@ -111,17 +111,27 @@ def login(client, provider):
 
 
 
-def test_google_login_session_and_logout(db_factory, google):
+def test_login_profile_logout_and_session_storage(db_factory, google):
     with TestClient(app) as client:
+        assert client.get("/api/v1/users/me").status_code == 401
         response = login(client, google)
-        assert "HttpOnly" in response.headers["set-cookie"]
-        assert "SameSite=lax" in response.headers["set-cookie"]
+        cookie = response.headers["set-cookie"]
+        assert "HttpOnly" in cookie and "SameSite=lax" in cookie
+        me = client.get("/api/v1/users/me")
+        assert me.headers["cache-control"] == "no-store"
+        assert me.json()["profile"] is None
         token = client.cookies.get(SESSION_COOKIE)
         with db_factory() as db:
-            session = db.scalar(select(LoginSession))
-            assert session.token_hash == sha256(token.encode()).hexdigest()
+            stored = db.scalar(select(LoginSession))
+            assert stored.token_hash == sha256(token.encode()).hexdigest()
             assert db.scalar(select(func.count()).select_from(GoogleAccount)) == 1
+        saved = client.put("/api/v1/users/me/profile", json=PROFILE, headers=ORIGIN)
+        assert saved.status_code == 200
+        assert saved.json()["profile"]["nickname"] == PROFILE["nickname"]
+        assert saved.json()["goals"]["daily"]["kcal"]["value"] == pytest.approx(2589.95)
+        assert client.get("/api/v1/users/me").json()["user"]["profileCompleted"] is True
         assert client.post("/api/v1/auth/logout", headers=ORIGIN).status_code == 204
+        assert client.get("/api/v1/users/me").status_code == 401
         with db_factory() as db:
             assert db.scalar(select(func.count()).select_from(LoginSession)) == 0
 
@@ -138,6 +148,7 @@ def test_invalid_id_token_is_rejected(db_factory, google, change):
         result = client.get("/api/v1/auth/google/callback", params={"code": "x", "state": state},
                             follow_redirects=False)
         assert "authError" in result.headers["location"]
+        assert client.get("/api/v1/users/me").status_code == 401
     with db_factory() as db:
         assert db.scalar(select(func.count()).select_from(User)) == 0
 
@@ -155,6 +166,7 @@ def test_bad_signature_and_forged_state_are_rejected(db_factory, google):
         response = client.get("/api/v1/auth/google/callback", params={"code": "x", "state": state},
                               follow_redirects=False)
         assert "authError" in response.headers["location"]
+        assert client.get("/api/v1/users/me").status_code == 401
 
 
 
@@ -166,24 +178,38 @@ def test_consent_and_verified_email_are_required(db_factory, google):
             response = client.get("/api/v1/auth/google/callback", params={"code": "x", "state": state},
                                   follow_redirects=False)
             assert "authError" in response.headers["location"]
+        assert client.get("/api/v1/users/me").status_code == 401
 
 
 
-def test_google_subject_is_stable_and_email_is_not_auto_linked(db_factory, google):
+def test_sub_is_identity_and_email_collision_is_not_linked(db_factory, google):
     with TestClient(app) as client:
         login(client, google)
-        with db_factory() as db:
-            user_id = db.get(GoogleAccount, google["subject"]).user_id
+        user_id = client.get("/api/v1/users/me").json()["user"]["id"]
         client.post("/api/v1/auth/logout", headers=ORIGIN)
         google["email"] = "changed@example.com"
         login(client, google)
-        with db_factory() as db:
-            assert db.get(GoogleAccount, google["subject"]).user_id == user_id
+        assert client.get("/api/v1/users/me").json()["user"]["id"] == user_id
         client.post("/api/v1/auth/logout", headers=ORIGIN)
-        google.update(subject="different-subject", email="member@example.com")
+        google["subject"] = "different-subject"
+        google["email"] = "member@example.com"
         state = begin_login(client, google)
-        response = client.get("/api/v1/auth/google/callback", params={"code": "x", "state": state}, follow_redirects=False)
+        response = client.get("/api/v1/auth/google/callback", params={"code": "x", "state": state},
+                              follow_redirects=False)
         assert "authError" in response.headers["location"]
+
+
+
+def test_csrf_and_session_expiry(db_factory, google):
+    with TestClient(app) as client:
+        login(client, google)
+        assert client.put("/api/v1/users/me/profile", json=PROFILE).status_code == 403
+        assert client.post("/api/v1/auth/logout", headers={"Origin": "https://attacker.example"}).status_code == 403
+        with db_factory() as db:
+            session = db.scalar(select(LoginSession))
+            session.expires_at = utc_now() - timedelta(seconds=1)
+            db.commit()
+        assert client.get("/api/v1/users/me").status_code == 401
 
 
 

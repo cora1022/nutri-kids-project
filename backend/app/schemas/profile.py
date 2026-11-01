@@ -3,6 +3,7 @@ from enum import StrEnum
 from pydantic import Field
 
 from app.schemas.common import APIModel
+from app.schemas.auth import AuthUser
 
 
 class Sex(StrEnum):
@@ -16,7 +17,7 @@ class GoalType(StrEnum):
 
 
 class GoalValue(APIModel):
-    value: float
+    value: float | None
     unit: str
     type: GoalType
 
@@ -41,6 +42,7 @@ class NutritionGoals(APIModel):
 
 
 class ProfileResponse(APIModel):
-    profile: ProfileData
-    goals: NutritionGoals
+    user: AuthUser
+    profile: ProfileData | None
+    goals: NutritionGoals | None
 
