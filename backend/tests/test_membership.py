@@ -39,6 +39,13 @@ def db_factory(monkeypatch):
             yield db
 
     app.dependency_overrides[get_db] = db_dependency
+    with factory() as db:
+        db.add(Food(id="cu:test", source_type="CU_PRODUCT", name="테스트 우유",
+                    price=1500, serving_amount=200, serving_unit="ml"))
+        db.add_all([FoodNutrient(food_id="cu:test", nutrient_key=key, value=value, unit=unit,
+                                quality="CONFIRMED", source="MFDS")
+                    for key, value, unit in [("kcal", 100, "kcal"), ("protein", 7, "g")]])
+        db.commit()
     yield factory
     app.dependency_overrides.clear()
     engine.dispose()
@@ -108,6 +115,14 @@ def login(client, provider):
     assert response.status_code == 303
     assert "authError" not in response.headers["location"]
     return response
+
+
+
+def meal_payload(key="request-first", eaten_at="2026-10-28T00:30:00+09:00"):
+    return {"clientRequestId": key, "mealType": "BREAKFAST", "eatenAt": eaten_at,
+            "profile": {k: v for k, v in PROFILE.items() if k != "nickname"},
+            "items": [{"foodId": "cu:test", "quantity": 1, "quantityUnit": "SERVING"}],
+            "recommendationScope": "CU_ONLY"}
 
 
 
@@ -213,8 +228,62 @@ def test_csrf_and_session_expiry(db_factory, google):
 
 
 
+def test_saved_meal_idempotency_and_snapshot(db_factory, google):
+    with TestClient(app) as client:
+        login(client, google)
+        assert client.post("/api/v1/meals", json=meal_payload(), headers=ORIGIN).status_code == 409
+        client.put("/api/v1/users/me/profile", json=PROFILE, headers=ORIGIN)
+        payload = meal_payload()
+        payload["profile"]["weightKg"] = 80  # 저장할 때는 DB의 55kg을 사용한다.
+        first = client.post("/api/v1/meals", json=payload, headers=ORIGIN)
+        assert first.status_code == 201
+        assert first.json()["analysis"]["nutrients"]["kcal"]["target"] == pytest.approx(863.32)
+        repeat = client.post("/api/v1/meals", json=payload, headers=ORIGIN)
+        assert repeat.status_code == 200
+        assert repeat.json() == first.json()
+        payload["items"][0]["quantity"] = 2
+        assert client.post("/api/v1/meals", json=payload, headers=ORIGIN).status_code == 409
+        with db_factory() as db:
+            assert db.scalar(select(func.count()).select_from(Meal)) == 1
+            row = db.scalar(select(FoodNutrient).where(FoodNutrient.nutrient_key == "kcal"))
+            row.value = 900
+            db.commit()
+        detail = client.get(f"/api/v1/meals/{first.json()['id']}")
+        assert detail.json()["analysis"]["nutrients"]["kcal"]["actual"] == 100
+        assert detail.json()["eatenAt"] == "2026-10-27T15:30:00Z"
+
+
+
+def test_korean_day_boundaries_and_user_isolation(db_factory, google):
+    with TestClient(app) as client:
+        login(client, google)
+        client.put("/api/v1/users/me/profile", json=PROFILE, headers=ORIGIN)
+        saved = []
+        for index, when in enumerate(["2026-10-27T14:59:59Z", "2026-10-27T15:00:00Z", "2026-10-28T15:00:00Z"]):
+            response = client.post("/api/v1/meals", json=meal_payload(f"request-{index}", when), headers=ORIGIN)
+            assert response.status_code == 201
+            saved.append(response.json()["id"])
+        day = client.get("/api/v1/meals/daily/2026-10-28").json()
+        assert day["recordedMealCount"] == 1
+        assert day["meals"][0]["id"] == saved[1]
+        assert day["isPartial"] is True
+        assert day["dailyAnalysis"]["nutrients"]["kcal"]["actual"] == 100
+        assert day["dailyAnalysis"]["nutrients"]["vitaminD"]["actual"] is None
+        assert day["dailyAnalysis"]["nutrients"]["vitaminD"]["status"] == "UNKNOWN"
+        client.post("/api/v1/auth/logout", headers=ORIGIN)
+        google.update(subject="9876543210", email="second@example.com")
+        login(client, google)
+        client.put("/api/v1/users/me/profile", json=PROFILE, headers=ORIGIN)
+        assert client.get(f"/api/v1/meals/{saved[1]}").status_code == 404
+        assert client.get("/api/v1/meals/daily/2026-10-28").json()["recordedMealCount"] == 0
+        # 다른 회원은 같은 요청 ID로 독립적인 기록을 만들 수 있다.
+        assert client.post("/api/v1/meals", json=meal_payload("request-1"), headers=ORIGIN).status_code == 201
+
+
+
 def test_missing_oauth_configuration_is_explicit(db_factory, monkeypatch):
     monkeypatch.setattr(settings, "google_client_id", "")
     with TestClient(app) as client:
         assert client.get("/api/v1/auth/config").json()["googleEnabled"] is False
         assert client.get("/api/v1/auth/google/login").status_code == 503
+        assert client.post("/api/v1/meals", json=meal_payload(), headers=ORIGIN).status_code == 401

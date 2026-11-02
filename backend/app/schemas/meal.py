@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from enum import StrEnum
 
-from pydantic import Field
+from pydantic import AwareDatetime, Field
 
 from app.schemas.common import APIModel, NutrientQuality
 from app.schemas.food import FoodResponse, Serving
@@ -49,7 +49,7 @@ class AnalysisProfile(APIModel):
 
 class MealAnalyzeRequest(APIModel):
     meal_type: MealType
-    eaten_at: datetime
+    eaten_at: AwareDatetime
     items: list[MealItemRequest] = Field(min_length=1, max_length=30)
     recommendation_scope: RecommendationScope = RecommendationScope.CU_ONLY
     profile: AnalysisProfile
@@ -117,6 +117,9 @@ class MealSummary(APIModel):
     eaten_at: datetime
     item_names: list[str]
     total_price: int | None
+    client_request_id: str
+    items: list[ResolvedMealItem]
+    analysis: MealAnalysisResponse
 
 
 class DailyAnalysis(APIModel):

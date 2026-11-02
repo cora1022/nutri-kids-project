@@ -5,13 +5,13 @@
 ## 역할 경계
 
 - 프론트는 프로필, 선택한 상품, 섭취량을 전달하고 결과를 표시합니다.
-- 백엔드는 동일한 요청과 응답 계약 안에서 목표량, 단위 환산, 영양소 합산, 상태 판정과 추천을 계산할 예정입니다.
+- 백엔드는 목표량, 단위 환산, 영양소 합산, 상태 판정과 추천을 계산합니다.
 - MySQL은 원천 데이터, 매핑 결과, 사용자와 식사 스냅샷을 저장합니다.
 - 작성 중인 식사 초안은 브라우저 localStorage에 유지합니다.
 
 ## 공통 영양소
 
-초기 화면은 `kcal`, `protein`, `calcium`, `iron`, `vitaminA`, `vitaminC`, `sodium`을 사용합니다.
+화면은 `kcal`, `protein`, `carbohydrate`, `calcium`, `iron`, `vitaminA`, `vitaminC`, `vitaminD`, `sodium`을 사용합니다.
 
 ```json
 {
@@ -30,19 +30,43 @@
 | --- | --- | --- |
 | 상태 확인 | `GET /api/v1/health` | 구현 |
 | 로그인 설정 | `GET /api/v1/auth/config` | 구현 |
-| 구글 로그인 | `GET /api/v1/auth/google/login?consent=true` | OAuth 설정 필요 |
-| 구글 콜백 | `GET /api/v1/auth/google/callback` | 구현 |
+| 구글 가입과 로그인 시작 | `GET /api/v1/auth/google/login?consent=true` | OAuth 설정 필요 |
+| 구글 콜백 | `GET /api/v1/auth/google/callback` | OAuth 설정 필요 |
 | 로그아웃 | `POST /api/v1/auth/logout` | 구현 |
-| 내 프로필 | `GET /api/v1/users/me` | 구현, 로그인 필요 |
+| 내 회원 정보와 프로필 | `GET /api/v1/users/me` | 구현, 로그인 필요 |
 | 프로필 저장 | `PUT /api/v1/users/me/profile` | 구현, 로그인 필요 |
 | 상품 검색 | `GET /api/v1/foods` | 구현 |
 | 바코드 조회 | `GET /api/v1/foods/barcode/{barcode}` | 구현 |
 | 상품 상세 | `GET /api/v1/foods/{foodId}` | 구현 |
-| 한 끼 분석 | `POST /api/v1/meals/analyze` | 계약 구현, 알고리즘 미구현 |
-| 식사 저장 | `POST /api/v1/meals` | 계약만 구성 |
-| 하루 평가 | `GET /api/v1/meals/daily/{date}` | 계약만 구성 |
+| 한 끼 분석 | `POST /api/v1/meals/analyze` | 구현 |
+| 식사 저장 | `POST /api/v1/meals` | 구현, 로그인 필요 |
+| 식사 상세 | `GET /api/v1/meals/{mealId}` | 구현, 본인 기록만 조회 |
+| 하루 평가 | `GET /api/v1/meals/daily/{date}` | 구현, 본인 기록만 조회 |
 
 구체적인 요청과 응답 스키마는 서버 실행 후 `/docs`에서 확인합니다. FastAPI 스키마가 프론트 타입 정의의 기준입니다.
+
+## 회원 인증과 프로필
+
+구글 OAuth 콜백에서 가입 또는 로그인을 처리하고 `nutrikids_session` HttpOnly 쿠키를 발급합니다. 브라우저는 `credentials: 'include'`로 쿠키를 전달합니다. 토큰을 localStorage나 URL에 넣지 않습니다. 회원 정보를 변경하거나 식사를 저장할 때는 허용한 프론트 주소의 `Origin`이 필요합니다.
+
+기존 미구현 `POST /auth/signup`, `POST /auth/login`은 구글 로그인 경로로 대체했습니다. 비밀번호 회원가입은 제공하지 않습니다.
+
+`GET /users/me`와 `PUT /users/me/profile`은 `user`, `profile`, `goals`를 반환합니다. 첫 로그인 직후에는 `profile`과 `goals`가 `null`입니다. 프로필을 저장하면 `goals.daily`와 `goals.perMeal`에 서버가 계산한 목표가 채워집니다.
+
+```json
+{
+  "user": {
+    "id": "usr_example",
+    "email": "member@example.com",
+    "nickname": "든든친구",
+    "profileCompleted": false
+  },
+  "profile": null,
+  "goals": null
+}
+```
+
+`PUT /users/me/profile` 요청은 `nickname`, `sex`, `age`, `heightCm`, `weightKg`, `mealsPerDay`를 받습니다. 철분과 나트륨은 평가 기준 범위 밖이므로 해당 목표의 `value`가 `null`입니다. OAuth 설정은 서버 환경 변수로 전달합니다.
 
 ## 상품 검색
 
@@ -132,9 +156,17 @@ GET /api/v1/foods?query=삼각김밥&sourceType=CU_PRODUCT&page=1&size=20
 
 `quantityUnit`은 `SERVING`, `GRAM`, `MILLILITER` 중 하나입니다. 식사를 저장할 때는 같은 본문에 중복 방지용 `clientRequestId`를 추가합니다.
 
-현재 임시 엔진은 상품 ID의 존재 여부만 확인합니다. 응답 형식은 유지하되 모든 영양소의 `actual`, `target`, `upperLimit`, `ratio`를 `null`로 반환하고 상태는 `UNKNOWN`, 품질은 `MISSING`으로 둡니다. `recommendations`는 빈 배열이며 `warnings`에 `NUTRITION_ENGINE_PENDING`을 포함합니다.
+영양 엔진은 서버 DB의 상품 성분과 전달받은 섭취량으로 계산합니다. 철분과 나트륨은 섭취량만 반환하고 판정은 `UNKNOWN`입니다. 계산 근거와 범위는 `backend/app/services/nutrition/Algorithm.md`에 있습니다.
 
-목표량, 합산, 판정 및 추천 기준과 내부 코드 구조는 담당자가 자유롭게 설계합니다. 프론트 연동을 위해 이 문서의 요청과 응답 JSON 계약만 유지합니다.
+## 식사 확정과 하루 결과
+
+`POST /meals`에는 위 분석 요청에 `clientRequestId`를 추가합니다. 서버는 로그인한 회원의 저장된 프로필로 다시 분석하고, 상품명, 섭취량과 분석 결과를 스냅샷으로 저장합니다. 요청 본문의 `profile`은 계약을 유지하지만 저장 계산에는 DB 프로필을 사용합니다.
+
+새 저장은 HTTP 201이며, 같은 회원의 동일한 `clientRequestId`와 식사 본문을 다시 보내면 기존 결과를 HTTP 200으로 반환합니다. 같은 ID에 다른 식사를 보내면 HTTP 409입니다. 재시도할 때 `eatenAt`을 새로 만들지 않습니다. 서로 다른 회원은 같은 요청 ID를 사용할 수 있습니다.
+
+`eatenAt`은 시간대가 있는 ISO 8601 일시가 필요합니다. MySQL에는 UTC로 저장하며 `GET /meals/daily/2026-10-28`은 한국 시간 10월 28일 00:00부터 다음 날 00:00 전까지 조회합니다.
+
+하루 결과는 `date`, `recordedMealCount`, `expectedMealCount`, `isPartial`, `meals`, `dailyAnalysis`를 반환합니다. `meals`에는 각 식사의 `id`, `clientRequestId`, `items`, `analysis`도 포함합니다. 하루 합계는 저장된 분석 스냅샷을 사용하고 현재 프로필의 하루 목표와 비교합니다. 일부 식사만 기록했거나 성분이 누락된 상태는 별도로 표시하며 미확인 성분을 0으로 바꾸지 않습니다.
 
 ## 오류 형식
 
@@ -151,7 +183,3 @@ GET /api/v1/foods?query=삼각김밥&sourceType=CU_PRODUCT&page=1&size=20
   "requestId": "req_01K5MNOP"
 }
 ```
-
-구글 콜백에서 HttpOnly 세션 쿠키를 발급합니다. 기존 비밀번호 가입과 로그인 계약은 구글 로그인 경로로 대체했습니다.
-
-프로필 응답은 user, profile, goals를 반환합니다. 첫 로그인 직후 profile과 goals는 null입니다.
