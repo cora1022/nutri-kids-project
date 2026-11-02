@@ -1,4 +1,4 @@
-const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+export const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 export class ApiError extends Error {
   status: number;
@@ -42,18 +42,15 @@ export function resolveErrorMessage(body: ApiErrorBody | null): string {
 }
 
 export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('nutrikids.accessToken');
   const headers = new Headers(options.headers || {});
   headers.set('Accept', 'application/json');
   if (options.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
+    credentials: 'include',
     headers,
   });
 

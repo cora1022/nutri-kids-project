@@ -50,6 +50,7 @@ export interface Food {
 export type Gender = 'male' | 'female';
 
 export interface Profile {
+  nickname?: string;
   gender: Gender;
   age: number;
   height: number;
@@ -99,6 +100,7 @@ export interface ConfirmedMeal {
   items: ConfirmedMealItem[];
   totals: Totals;
   confirmedAt: string;
+  analysis?: MealAnalysis;
 }
 
 export interface RecommendationCandidate {
@@ -123,6 +125,13 @@ export interface MealAnalysis {
   evaluation: Evaluation;
   recommendations: RecommendationCandidate[];
   warnings: AnalysisWarning[];
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  nickname: string;
+  profileCompleted: boolean;
 }
 
 export type Stage =
