@@ -51,7 +51,6 @@ def db_factory(monkeypatch):
     engine.dispose()
 
 
-
 @pytest.fixture
 def google(monkeypatch):
     """가짜 Google HTTP 응답을 쓰되 Authlib의 state, nonce와 RSA 서명 검증은 실제 실행한다."""
@@ -96,7 +95,6 @@ def google(monkeypatch):
     return provider
 
 
-
 def begin_login(client, provider, consent=True):
     response = client.get(f"/api/v1/auth/google/login?consent={str(consent).lower()}", follow_redirects=False)
     assert response.status_code == 302
@@ -105,7 +103,6 @@ def begin_login(client, provider, consent=True):
     provider["challenge"] = params["code_challenge"][0]
     assert params["code_challenge_method"] == ["S256"]
     return params["state"][0]
-
 
 
 def login(client, provider):
@@ -117,13 +114,11 @@ def login(client, provider):
     return response
 
 
-
 def meal_payload(key="request-first", eaten_at="2026-10-28T00:30:00+09:00"):
     return {"clientRequestId": key, "mealType": "BREAKFAST", "eatenAt": eaten_at,
             "profile": {k: v for k, v in PROFILE.items() if k != "nickname"},
             "items": [{"foodId": "cu:test", "quantity": 1, "quantityUnit": "SERVING"}],
             "recommendationScope": "CU_ONLY"}
-
 
 
 def test_login_profile_logout_and_session_storage(db_factory, google):
@@ -151,7 +146,6 @@ def test_login_profile_logout_and_session_storage(db_factory, google):
             assert db.scalar(select(func.count()).select_from(LoginSession)) == 0
 
 
-
 @pytest.mark.parametrize("change", [
     {"aud": "wrong-client"}, {"iss": "https://attacker.example"}, {"nonce": "wrong-nonce"},
     {"exp": int(time.time()) - 600},
@@ -166,7 +160,6 @@ def test_invalid_id_token_is_rejected(db_factory, google, change):
         assert client.get("/api/v1/users/me").status_code == 401
     with db_factory() as db:
         assert db.scalar(select(func.count()).select_from(User)) == 0
-
 
 
 def test_bad_signature_and_forged_state_are_rejected(db_factory, google):
@@ -184,7 +177,6 @@ def test_bad_signature_and_forged_state_are_rejected(db_factory, google):
         assert client.get("/api/v1/users/me").status_code == 401
 
 
-
 def test_consent_and_verified_email_are_required(db_factory, google):
     with TestClient(app) as client:
         for consent, verified in [(False, True), (True, False)]:
@@ -194,7 +186,6 @@ def test_consent_and_verified_email_are_required(db_factory, google):
                                   follow_redirects=False)
             assert "authError" in response.headers["location"]
         assert client.get("/api/v1/users/me").status_code == 401
-
 
 
 def test_sub_is_identity_and_email_collision_is_not_linked(db_factory, google):
@@ -214,7 +205,6 @@ def test_sub_is_identity_and_email_collision_is_not_linked(db_factory, google):
         assert "authError" in response.headers["location"]
 
 
-
 def test_csrf_and_session_expiry(db_factory, google):
     with TestClient(app) as client:
         login(client, google)
@@ -225,7 +215,6 @@ def test_csrf_and_session_expiry(db_factory, google):
             session.expires_at = utc_now() - timedelta(seconds=1)
             db.commit()
         assert client.get("/api/v1/users/me").status_code == 401
-
 
 
 def test_saved_meal_idempotency_and_snapshot(db_factory, google):
@@ -251,7 +240,6 @@ def test_saved_meal_idempotency_and_snapshot(db_factory, google):
         detail = client.get(f"/api/v1/meals/{first.json()['id']}")
         assert detail.json()["analysis"]["nutrients"]["kcal"]["actual"] == 100
         assert detail.json()["eatenAt"] == "2026-10-27T15:30:00Z"
-
 
 
 def test_korean_day_boundaries_and_user_isolation(db_factory, google):
@@ -280,10 +268,37 @@ def test_korean_day_boundaries_and_user_isolation(db_factory, google):
         assert client.post("/api/v1/meals", json=meal_payload("request-1"), headers=ORIGIN).status_code == 201
 
 
-
 def test_missing_oauth_configuration_is_explicit(db_factory, monkeypatch):
     monkeypatch.setattr(settings, "google_client_id", "")
     with TestClient(app) as client:
         assert client.get("/api/v1/auth/config").json()["googleEnabled"] is False
         assert client.get("/api/v1/auth/google/login").status_code == 503
         assert client.post("/api/v1/meals", json=meal_payload(), headers=ORIGIN).status_code == 401
+
+
+def test_reimport_preserves_saved_meals_and_food_references(db_factory, google, monkeypatch):
+    from scripts import import_data
+    from pathlib import Path
+
+    monkeypatch.setattr(import_data, "SessionLocal", db_factory)
+    with db_factory() as db:
+        monkeypatch.setattr(import_data, "engine", db.get_bind())
+    monkeypatch.setattr(import_data, "MFDS_BY_ID", {})
+    monkeypatch.setattr(import_data, "load_standard_rows", lambda _: {})
+    source = {"test": {"name": "바뀐 우유", "category": "음료", "price": 1700,
+                        "barcode": None, "image_url": None, "item_report_candidates": [],
+                        "item_report_status": None, "item_report_evidence": None}}
+    monkeypatch.setattr(import_data, "load_cu_rows", lambda _: source)
+    with TestClient(app) as client:
+        login(client, google)
+        client.put("/api/v1/users/me/profile", json=PROFILE, headers=ORIGIN)
+        saved = client.post("/api/v1/meals", json=meal_payload(), headers=ORIGIN).json()
+        import_data.seed(Path("unused-cu"), Path("unused-standard"))
+        with db_factory() as db:
+            assert db.get(Food, "cu:test").name == "바뀐 우유"
+        detail = client.get(f"/api/v1/meals/{saved['id']}").json()
+        assert detail["items"][0]["name"] == "테스트 우유"
+        assert detail["analysis"]["nutrients"]["kcal"]["actual"] == 100
+        source.clear()
+        import_data.seed(Path("unused-cu"), Path("unused-standard"))
+        assert client.get(f"/api/v1/meals/{saved['id']}").status_code == 200

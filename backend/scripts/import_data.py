@@ -5,7 +5,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from openpyxl import load_workbook
-from sqlalchemy import delete, inspect, text
+from sqlalchemy import delete, inspect, text, update
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND_DIR))
@@ -156,7 +156,8 @@ def seed(cu_path: Path, standard_path: Path) -> None:
     with SessionLocal() as db:
         db.execute(delete(ProductStandardMapping).where(ProductStandardMapping.food_id.like("cu:%")))
         db.execute(delete(FoodNutrient).where(FoodNutrient.food_id.like("cu:%")))
-        db.execute(delete(Food).where(Food.id.like("cu:%")))
+        # 확정 식사가 참조하는 상품 ID를 보존한다. 원본에서 빠진 상품은 검색에서 숨긴다.
+        db.execute(update(Food).where(Food.id.like("cu:%")).values(barcode=None, item_report_no=None))
 
         used_barcodes: set[str] = set()
         enriched_names: list[str] = []
@@ -199,7 +200,7 @@ def seed(cu_path: Path, standard_path: Path) -> None:
                 count_unit="회" if standard or mfds else None,
                 serving_label=serving.label if standard or mfds else None,
             )
-            db.add(food)
+            food = db.merge(food)
 
             if standard:
                 if standard_code not in added_standard_codes and db.get(StandardFood, standard_code) is None:
