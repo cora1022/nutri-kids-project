@@ -825,3 +825,20 @@ legend {
   color: rgba(255, 255, 255, 0.85);
   animation: splash-text-in 0.5s ease 0.25s both;
 }
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.account-actions button {
+  padding: 6px 10px;
+  border: 1px solid #d9e2dc;
+  border-radius: 8px;
+  background: #fff;
+  color: #245d43;
+  cursor: pointer;
+}

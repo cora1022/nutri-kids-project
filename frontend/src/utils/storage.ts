@@ -33,21 +33,31 @@ export function loadProfile(): Profile | null {
   return read<Profile | null>(PROFILE_KEY, null);
 }
 
-export function saveDraftMeal(dateKey: string, items: MealItem[]): boolean {
-  const all = read<Record<string, MealItem[]>>(DRAFT_KEY, {});
+export function saveDraftMeal(dateKey: string, items: MealItem[], scope = 'guest'): boolean {
+  const key = `${DRAFT_KEY}.${scope}`;
+  const all = read<Record<string, MealItem[]>>(key, {});
   all[dateKey] = items;
-  return write(DRAFT_KEY, all);
+  return write(key, all);
 }
 
-export function loadDraftMeal(dateKey: string): MealItem[] {
-  const all = read<Record<string, MealItem[]>>(DRAFT_KEY, {});
+export function loadDraftMeal(dateKey: string, scope = 'guest'): MealItem[] {
+  const all = read<Record<string, MealItem[]>>(`${DRAFT_KEY}.${scope}`, {});
   return all[dateKey] || [];
 }
 
-export function clearDraftMeal(dateKey: string): boolean {
-  const all = read<Record<string, MealItem[]>>(DRAFT_KEY, {});
+export function clearDraftMeal(dateKey: string, scope = 'guest'): boolean {
+  const key = `${DRAFT_KEY}.${scope}`;
+  const all = read<Record<string, MealItem[]>>(key, {});
   delete all[dateKey];
-  return write(DRAFT_KEY, all);
+  return write(key, all);
+}
+
+export function loadDraftIdentity(scope: string): { id: string; eatenAt: string; signature: string } | null {
+  return read(`nutrikids.draftIdentity.${scope}`, null);
+}
+
+export function saveDraftIdentity(scope: string, value: { id: string; eatenAt: string; signature: string } | null) {
+  return write(`nutrikids.draftIdentity.${scope}`, value);
 }
 
 // 식사 저장: 성공/실패를 흉내 낼 수 있도록 async + 예외 가능성을 유지합니다.

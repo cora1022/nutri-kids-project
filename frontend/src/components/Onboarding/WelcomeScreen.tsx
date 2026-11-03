@@ -1,14 +1,11 @@
 import Button from '../common/Button';
-import { loadProfile } from '../../utils/storage';
 import { useApp } from '../../hooks/useApp';
 
 export default function WelcomeScreen() {
-  const { setStage } = useApp();
+  const { setStage, profile, googleEnabled } = useApp();
 
   function handleStart() {
-    const existing = loadProfile();
-    // 기존 회원(저장된 프로필 있음)은 동의·입력 단계를 건너뛰고 바로 목표 계산으로
-    setStage(existing ? 'goals' : 'consent');
+    setStage(profile ? 'goals' : 'consent');
   }
 
   return (
@@ -28,6 +25,7 @@ export default function WelcomeScreen() {
       <Button size="lg" fullWidth onClick={handleStart}>
         시작하기
       </Button>
+      <p className="muted-line">{googleEnabled ? '구글 계정으로 로그인하면 다른 기기에서도 기록을 확인할 수 있어요.' : '체험 기록은 이 브라우저에 저장돼요.'}</p>
     </div>
   );
 }

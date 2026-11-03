@@ -29,7 +29,7 @@ export default function MealResultScreen() {
   }, [mealItems, profile]);
 
   // 1) 빈 식사
-  if (mealItems.length === 0) {
+  if (mealItems.length === 0 && !askDayDone) {
     return (
       <ScreenShell eyebrow="03 한 끼 평가" title="담긴 음식이 없어요">
         <StageTracker current="evaluate" />

@@ -144,19 +144,31 @@ export type Stage =
   | 'dailySummary';
 
 export interface AppContextValue {
+  user: AuthUser | null;
+  authReady: boolean;
+  authError: string;
+  googleEnabled: boolean;
+  startGoogleLogin: () => void;
+  logout: () => Promise<void>;
   profile: Profile | null;
   stage: Stage;
   setStage: (stage: Stage) => void;
   dateKey: string;
-  completeProfile: (profile: Profile) => void;
+  completeProfile: (profile: Profile) => Promise<void>;
   dailyGoals: Goals | null;
   mealGoals: Goals | null;
   mealItems: MealItem[];
   addFoodToMeal: (food: Food, qty: number) => void;
   undoLastFood: () => void;
   resetMealDraft: () => void;
-  confirmMeal: () => Promise<ConfirmedMeal>;
+  confirmMeal: (analysis?: MealAnalysis) => Promise<ConfirmedMeal>;
   lastConfirmedMeal: ConfirmedMeal | null;
   dailyMeals: ConfirmedMeal[];
   dailyTotals: Totals | null;
+  dailyAnalysis: Evaluation | null;
+  dailyWarnings: AnalysisWarning[];
+  dailyIsPartial: boolean;
+  dailyError: string;
+  dailyLoading: boolean;
+  refreshDaily: (date?: string) => Promise<void>;
 }
