@@ -1,156 +1,101 @@
 import { useEffect, useState } from 'react';
 import Button from '../common/Button';
-import { Card, EmptyState, ScreenShell } from '../common/Card';
-import NutrientBar from '../common/NutrientBar';
-import StageTracker from '../common/StageTracker';
+import { EmptyState, ScreenShell } from '../common/Card';
+import Icon from '../common/Icon';
 import { useApp } from '../../hooks/useApp';
 import { NUTRIENT_META } from '../../data/goals';
 import { analyzeMeal } from '../../services/mealApi';
-import type { MealAnalysis } from '../../types';
+import { mealDateLabel } from '../../utils/resultPresentation';
+import { AnalysisSwitch, EnergySummary, NutrientOverview } from './NutritionOverview';
+import type { Food, MealAnalysis } from '../../types';
 
-type SaveState = 'idle' | 'saving' | 'error' | 'saved';
+function ProductThumbnail({ food }: { food: Food }) {
+  const [failed, setFailed] = useState(false);
+  return <div className="recommend-thumbnail">{food.imageUrl && !failed
+    ? <img src={food.imageUrl} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} />
+    : <Icon name="bowl" size={30} />}</div>;
+}
 
 export default function MealResultScreen() {
-  const { mealItems, profile, setStage, confirmMeal, addFoodToMeal } = useApp();
-  const [saveState, setSaveState] = useState<SaveState>('idle');
-  const [askDayDone, setAskDayDone] = useState(false);
-  const [analysis, setAnalysis] = useState<MealAnalysis | null>(null);
-  const [analysisError, setAnalysisError] = useState('');
+  const { mealItems, profile, setStage, confirmMeal, addFoodToMeal, lastConfirmedMeal, user } = useApp();
+  const [state, setState] = useState<{ signature: string; result?: MealAnalysis; error?: string } | null>(null);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'error'>('idle');
+  const [saveError, setSaveError] = useState('');
+  const [retry, setRetry] = useState(0);
+  const [openedAt] = useState(() => new Date());
+  const signature = JSON.stringify([profile, mealItems.map(({ food, qty }) => [food.id, qty])]);
+  const saved = mealItems.length === 0 ? lastConfirmedMeal : null;
 
   useEffect(() => {
     if (!mealItems.length || !profile) return;
     let active = true;
     analyzeMeal(profile, mealItems)
-      .then((result) => active && setAnalysis(result))
-      .catch((error: Error) => active && setAnalysisError(error.message));
-    return () => {
-      active = false;
-    };
-  }, [mealItems, profile]);
+      .then((result) => { if (active) setState({ signature, result }); })
+      .catch((error: Error) => { if (active) setState({ signature, error: error.message }); });
+    return () => { active = false; };
+  }, [mealItems, profile, signature, retry]);
 
-  // 1) 빈 식사
-  if (mealItems.length === 0 && !askDayDone) {
-    return (
-      <ScreenShell eyebrow="03 한 끼 평가" title="담긴 음식이 없어요">
-        <StageTracker current="evaluate" />
-        <EmptyState
-          icon="🍽️"
-          title="빈 식사예요"
-          description="평가하려면 먼저 음식을 입력해 주세요"
-          action={<Button onClick={() => setStage('search')}>음식 입력으로 돌아가기</Button>}
-        />
-      </ScreenShell>
-    );
-  }
+  const analysis = saved?.analysis ?? (state?.signature === signature ? state.result : undefined);
+  const analysisError = !saved && state?.signature === signature ? state.error : null;
 
   async function handleConfirm() {
+    if (saveState === 'saving' || !analysis) return;
     setSaveState('saving');
-    try {
-      await confirmMeal();
-      setSaveState('saved');
-      setAskDayDone(true);
-    } catch {
+    setSaveError('');
+    try { await confirmMeal(analysis); setSaveState('idle'); }
+    catch (error) {
       setSaveState('error');
+      setSaveError(error instanceof Error ? error.message : '저장하지 못했어요. 다시 시도해 주세요.');
     }
   }
 
-  function handleDayDone(isDone: boolean) {
-    setAskDayDone(false);
-    setStage(isDone ? 'dailySummary' : 'search');
-  }
+  if (!mealItems.length && !saved?.analysis) return <ScreenShell title="이번 한 끼 결과">
+    <AnalysisSwitch period="meal" />
+    <EmptyState icon="🍽️" title="아직 담긴 음식이 없어요" description="음식을 담으면 한 끼 영양을 확인할 수 있어요"
+      action={<Button onClick={() => setStage('search')}>음식 담으러 가기</Button>} />
+  </ScreenShell>;
 
-  if (askDayDone) {
-    return (
-      <ScreenShell eyebrow="03 한 끼 평가" title="한 끼 저장 완료!">
-        <Card tone="success">
-          <p>오늘 기록을 모두 마쳤나요?</p>
-          <div className="button-row">
-            <Button variant="secondary" onClick={() => handleDayDone(false)}>
-              아니요, 더 먹을 거예요
-            </Button>
-            <Button onClick={() => handleDayDone(true)}>네, 오늘은 끝!</Button>
-          </div>
-        </Card>
-      </ScreenShell>
-    );
-  }
+  if (analysisError) return <ScreenShell title="분석을 완료하지 못했어요">
+    <p className="inline-notice notice-error" role="alert">{analysisError}</p>
+    <Button onClick={() => { setState(null); setRetry((value) => value + 1); }}>다시 분석하기</Button>
+    <Button variant="secondary" onClick={() => setStage('search')}>음식 입력으로 돌아가기</Button>
+  </ScreenShell>;
 
-  if (analysisError) {
-    return (
-      <ScreenShell eyebrow="03 한 끼 평가" title="분석하지 못했어요">
-        <Card tone="danger"><p>{analysisError}</p></Card>
-        <Button onClick={() => setStage('search')}>음식 입력으로 돌아가기</Button>
-      </ScreenShell>
-    );
-  }
+  if (!analysis) return <ScreenShell title="이번 한 끼 결과">
+    <AnalysisSwitch period="meal" /><div className="loading-state" role="status"><span className="loading-dot" />영양 정보를 계산하고 있어요</div>
+  </ScreenShell>;
 
-  if (!analysis) {
-    return (
-      <ScreenShell eyebrow="03 한 끼 평가" title="영양 정보를 계산하고 있어요">
-        <p className="muted-line">잠시만 기다려주세요…</p>
-      </ScreenShell>
-    );
-  }
+  return <ScreenShell title="이번 한 끼 결과" subtitle={mealDateLabel(saved ? new Date(saved.confirmedAt) : openedAt)}>
+    <AnalysisSwitch period="meal" />
+    {saved && <p className="inline-notice notice-success" role="status"><Icon name="check" size={18} />
+      {user ? '식사를 내 기록에 저장했어요' : '식사를 이 브라우저에 저장했어요'}</p>}
+    <EnergySummary evaluation={analysis.evaluation} />
+    <NutrientOverview evaluation={analysis.evaluation} />
 
-  const { evaluation, recommendations } = analysis;
-  const deficientKeys = NUTRIENT_META.filter(({ key }) => evaluation[key]?.status === 'deficient').map(({ key }) => key);
+    {!saved && <section className="recommend-section" aria-labelledby="recommend-title">
+      <div className="section-title"><h2 id="recommend-title">이렇게 보완해보세요</h2></div>
+      {analysis.recommendations.length ? <div className="recommend-list">
+        {analysis.recommendations.map(({ food, reasonKeys }) => <div key={food.id} className="recommend-card">
+          <ProductThumbnail food={food} /><div className="recommend-copy"><strong>{food.name}</strong>
+            <p>{reasonKeys.map((key) => NUTRIENT_META.find((meta) => meta.key === key)?.label).filter(Boolean).join(', ')} 보완</p>
+            <span>{food.servingLabel}{food.price != null && ` / ${food.price.toLocaleString('ko-KR')}원`}</span></div>
+          <Button variant="secondary" onClick={() => { addFoodToMeal(food, 1); setStage('search'); }}>담기</Button>
+        </div>)}
+      </div> : <p className="recommend-empty">{analysis.evaluation.kcal?.value == null
+        ? '확인할 수 있는 영양 정보가 더 필요해요. 다른 상품도 함께 살펴보세요.'
+        : '현재 기록과 영양 데이터에서 추천할 상품이 없어요.'}</p>}
+    </section>}
 
-  return (
-    <ScreenShell eyebrow="03 한 끼 평가 · 추천" title="이번 한 끼 결과예요">
-      <StageTracker current="evaluate" />
+    <details className="meal-contents"><summary>{saved ? '저장한' : '담은'} 음식 {saved ? saved.items.length : mealItems.length}개<Icon name="chevron" size={16} /></summary>
+      <ul>{saved ? saved.items.map((item, index) => <li key={`${item.foodId}-${index}`}><span>{item.name}</span><b>{item.qty}회</b></li>)
+        : mealItems.map(({ food, qty, key }) => <li key={key}><span>{food.name}</span><b>{qty}{food.unit}</b></li>)}</ul>
+    </details>
 
-      <div className="nutrient-bar-list">
-        {NUTRIENT_META.map(({ key, label, unit, kind }) => (
-          <NutrientBar key={key} label={label} unit={unit} kind={kind} evalItem={evaluation[key]} />
-        ))}
-      </div>
-
-      {deficientKeys.length > 0 && (
-        <Card tone="muted" className="recommend-block">
-          <h3>이런 걸 더해보는 건 어때요?</h3>
-          {recommendations.length === 0 ? (
-            <p className="muted-line">남은 칼로리와 나트륨 범위에서 추천할 항목이 없어요.</p>
-          ) : (
-            <div className="recommend-list">
-              {recommendations.map(({ food, reasonKeys }) => (
-                <div key={food.id} className="recommend-card">
-                  <div>
-                    <strong>{food.name}</strong>
-                    <p className="muted-line">
-                      {food.servingLabel} · {reasonKeys.map((k) => NUTRIENT_META.find((n) => n.key === k)?.label).join(', ')} 보충
-                    </p>
-                  </div>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      addFoodToMeal(food, 1);
-                      setStage('search');
-                    }}
-                  >
-                    담으러 가기
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      )}
-
-      {saveState === 'error' && (
-        <Card tone="danger">
-          <p>저장에 실패했어요. 입력한 내용은 그대로 남아있으니 다시 시도해 주세요.</p>
-          <Button onClick={handleConfirm}>다시 저장하기</Button>
-        </Card>
-      )}
-
-      <div className="button-row">
-        <Button variant="secondary" onClick={() => setStage('search')}>
-          추가·수정하기
-        </Button>
-        <Button onClick={handleConfirm} disabled={saveState === 'saving'}>
-          {saveState === 'saving' ? '저장 중…' : '이대로 확정하기'}
-        </Button>
-      </div>
-    </ScreenShell>
-  );
+    {saveState === 'error' && <p className="inline-notice notice-error" role="alert">{saveError}<br />입력한 음식은 그대로 남아있어요.</p>}
+    <div className="result-action-bar">
+      <Button variant="secondary" disabled={saveState === 'saving'} onClick={() => setStage('search')}>{saved ? '새 식사 입력' : '음식 추가'}</Button>
+      {saved ? <Button onClick={() => setStage('dailySummary')}>오늘 전체 보기</Button>
+        : <Button disabled={saveState === 'saving'} onClick={handleConfirm}>{saveState === 'saving' ? '저장 중…' : '식사 저장하기'}</Button>}
+    </div>
+  </ScreenShell>;
 }
