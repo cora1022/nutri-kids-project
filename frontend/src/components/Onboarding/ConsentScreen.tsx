@@ -4,7 +4,7 @@ import { ScreenShell } from '../common/Card';
 import { useApp } from '../../hooks/useApp';
 
 export default function ConsentScreen() {
-  const { setStage, googleEnabled, startGoogleLogin } = useApp();
+  const { setStage, googleEnabled, startGoogleLogin, entryMode } = useApp();
   const [checked, setChecked] = useState(false);
   const [declined, setDeclined] = useState(false);
 
@@ -40,10 +40,9 @@ export default function ConsentScreen() {
           동의하지 않음
         </Button>
       </div>
-      {googleEnabled && <Button size="lg" fullWidth disabled={!checked} onClick={startGoogleLogin}>
-        동의하고 구글로 계속하기</Button>}
-      <Button variant="secondary" size="lg" fullWidth disabled={!checked} onClick={() => setStage('profile')}>
-        동의하고 체험하기</Button>
+      {entryMode === 'google' ? <Button size="lg" fullWidth disabled={!checked || !googleEnabled} onClick={startGoogleLogin}>
+        동의하고 구글로 계속하기</Button> : <Button size="lg" fullWidth disabled={!checked} onClick={() => setStage('profile')}>
+        동의하고 게스트로 시작하기</Button>}
       <Button variant="ghost" onClick={() => setStage('welcome')}>처음 화면으로 돌아가기</Button>
     </ScreenShell>
   );

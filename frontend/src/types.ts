@@ -141,7 +141,10 @@ export type Stage =
   | 'goals'
   | 'search'
   | 'evaluate'
-  | 'dailySummary';
+  | 'dailySummary'
+  | 'settings';
+
+export type EntryMode = 'google' | 'guest';
 
 export interface AppContextValue {
   user: AuthUser | null;
@@ -150,6 +153,12 @@ export interface AppContextValue {
   googleEnabled: boolean;
   startGoogleLogin: () => void;
   logout: () => Promise<void>;
+  entryMode: EntryMode;
+  beginEntry: (mode: EntryMode) => void;
+  openSettings: () => void;
+  closeSettings: () => void;
+  editProfile: () => void;
+  cancelProfileEdit: () => void;
   profile: Profile | null;
   stage: Stage;
   setStage: (stage: Stage) => void;

@@ -30,7 +30,7 @@ interface FormErrors {
 }
 
 export default function ProfileForm() {
-  const { profile, user, completeProfile, setStage } = useApp();
+  const { profile, user, completeProfile, cancelProfileEdit } = useApp();
   const isEditing = Boolean(profile);
   const [form, setForm] = useState<FormState>(() =>
     profile
@@ -151,7 +151,7 @@ export default function ProfileForm() {
         <Button type="submit" size="lg" fullWidth disabled={saving}>
           {saving ? '저장 중…' : isEditing ? '수정한 정보로 목표 다시 계산하기' : '목표 계산하기'}
         </Button>
-        {isEditing && <Button type="button" variant="ghost" size="lg" fullWidth onClick={() => setStage('search')}>취소하고 돌아가기</Button>}
+        <Button type="button" variant="ghost" size="lg" fullWidth onClick={cancelProfileEdit}>취소하고 돌아가기</Button>
       </form>
     </ScreenShell>
   );

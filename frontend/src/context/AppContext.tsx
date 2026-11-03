@@ -13,7 +13,7 @@ import {
 import {
   getDailyMeals, koreanDate, saveMeal, toConfirmedMeal, toEvaluation, type DailyResponse,
 } from '../services/mealApi';
-import type { AppContextValue, ConfirmedMeal, Food, MealAnalysis, MealItem, Profile, Stage } from '../types';
+import type { AppContextValue, ConfirmedMeal, EntryMode, Food, MealAnalysis, MealItem, Profile, Stage } from '../types';
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [account, setAccount] = useState<AccountResponse | null>(null);
@@ -22,6 +22,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [googleEnabled, setGoogleEnabled] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stage, setStage] = useState<Stage>('welcome');
+  const [entryMode, setEntryMode] = useState<EntryMode>('guest');
+  const settingsReturnTo = useRef<Stage>('welcome');
+  const profileReturnTo = useRef<Stage | null>(null);
   const [dateKey, setDateKey] = useState(koreanDate);
   const [mealItems, setMealItems] = useState<MealItem[]>([]);
   const [lastConfirmedMeal, setLastConfirmedMeal] = useState<ConfirmedMeal | null>(null);
@@ -50,7 +53,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const storedProfile = result?.profile ? toUiProfile(result.profile) : result ? null : loadProfile();
       setProfile(storedProfile);
       setMealItems(loadDraftMeal(koreanDate(), result?.user.id ?? 'guest'));
-      setStage(storedProfile ? 'search' : result ? 'profile' : 'welcome');
+      setStage(result ? storedProfile ? 'search' : 'profile' : 'welcome');
+      settingsReturnTo.current = result ? storedProfile ? 'search' : 'profile' : 'welcome';
       setAuthReady(true);
       if (result?.profile) {
         setDailyLoading(true);
@@ -94,8 +98,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!saveProfile(newProfile)) throw new Error('프로필을 저장하지 못했어요.');
       setProfile(newProfile);
     }
-    setStage('goals');
+    setStage(profileReturnTo.current ?? 'goals');
+    profileReturnTo.current = null;
   }
+
+  function beginEntry(mode: EntryMode) {
+    if (account) { setStage(profile ? 'search' : 'profile'); return; }
+    setEntryMode(mode);
+    profileReturnTo.current = null;
+    if (mode === 'guest' && profile) setStage('search');
+    else setStage('consent');
+  }
+
+  function openSettings() {
+    if (stage === 'settings') return;
+    settingsReturnTo.current = stage;
+    setStage('settings');
+  }
+
+  function closeSettings() { setStage(settingsReturnTo.current); }
+
+  function editProfile() {
+    profileReturnTo.current = 'settings';
+    setStage('profile');
+  }
+
+  function cancelProfileEdit() {
+    setStage(profileReturnTo.current ?? (profile ? 'search' : userStage()));
+    profileReturnTo.current = null;
+  }
+
+  function userStage(): Stage { return account ? 'settings' : 'welcome'; }
 
   function addFoodToMeal(food: Food, qty: number) {
     setMealItems((prev) => [...prev, { food, qty, key: crypto.randomUUID() }]);
@@ -170,6 +203,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: AppContextValue = {
     user: account?.user ?? null, authReady, authError, googleEnabled, startGoogleLogin, logout,
+    entryMode, beginEntry, openSettings, closeSettings, editProfile, cancelProfileEdit,
     profile, stage, setStage, dateKey, completeProfile, dailyGoals, mealGoals, mealItems,
     addFoodToMeal, undoLastFood, resetMealDraft, confirmMeal, lastConfirmedMeal, dailyMeals, dailyTotals,
     dailyAnalysis: serverDaily ? toEvaluation(serverDaily.dailyAnalysis.nutrients) : null,

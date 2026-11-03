@@ -106,14 +106,9 @@ export default function SearchScreen() {
 
   return (
     <ScreenShell
-      eyebrow="02 상품 검색 · 음식 입력"
+      eyebrow="음식 담기"
       title="오늘 뭘 먹었나요?"
-      subtitle="편의점 상품이든 집밥이든 검색해서 담아주세요"
-      headerAction={
-        <Button variant="ghost" onClick={() => setStage('profile')}>
-          ⚙ 목표 수정
-        </Button>
-      }
+      subtitle="상품을 찾아 실제로 먹은 양만 담아주세요"
     >
       <StageTracker current="search" />
 

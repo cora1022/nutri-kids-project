@@ -1,0 +1,101 @@
+/* Approved concept: a shared light header, direct entry choices and compact results. */
+body { background: #f7f5fb; }
+.app-shell { background: #fbfaff; padding-bottom: 16px; }
+.app-main { flex: 1; min-width: 0; outline: none; }
+.top-bar {
+  min-height: 78px; padding: 16px 22px; background: #fbfaff;
+  color: var(--color-text); position: relative;
+}
+.top-bar-mark { width: 38px; height: 38px; background: transparent; padding: 0; object-fit: contain; }
+.top-bar-name { font-size: 26px; letter-spacing: -.06em; }
+.top-bar-brand { gap: 8px; }
+.icon-button {
+  width: 44px; height: 44px; border: 0; background: transparent; color: var(--color-text);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 14px;
+}
+.icon-button:hover { background: var(--color-primary-tint); }
+.icon-button:disabled { cursor: default; opacity: .7; }
+.settings-header-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 21px; }
+.btn { border-radius: 13px; min-height: 44px; box-shadow: none; }
+.btn-lg { min-height: 54px; font-size: 16px; }
+.btn-primary { background: var(--color-primary); }
+.btn-secondary { background: white; border: 1px solid #c9b5ef; color: #6d28d9; }
+.btn-ghost { text-decoration: none; }
+button:focus-visible, summary:focus-visible, a:focus-visible {
+  outline: 3px solid #a78bfa; outline-offset: 3px;
+}
+.screen { padding: 16px 22px 24px; }
+.screen-head { margin-bottom: 18px; }
+.screen-head h1 { font-size: 27px; letter-spacing: -.04em; }
+.screen-head .subtitle { margin-top: 6px; font-size: 13px; }
+.screen-body { gap: 18px; }
+.data-source { padding: 16px 20px 0; font-size: 10px; opacity: .8; }
+.section-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.section-title h2 { font-size: 18px; letter-spacing: -.03em; }
+.section-note { font-size: 11.5px; color: #776d8c; margin-top: 9px; line-height: 1.7; }
+.text-action { background: none; border: 0; padding: 8px 0 8px 12px; color: #7c3aed; font-weight: 700; cursor: pointer; }
+.inline-notice { display: flex; gap: 8px; align-items: center; padding: 13px 15px; font-size: 13px; border-radius: 13px; }
+.notice-error { background: #fff0ed; color: #a63827; }
+.notice-success { background: #ecf6e3; color: #426d24; }
+.loading-state { min-height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 14px; color: #776d8c; font-size: 14px; }
+.loading-dot { width: 24px; height: 24px; border: 3px solid #e7dbfa; border-top-color: #7c3aed; border-radius: 50%; animation: loading-spin .8s linear infinite; }
+@keyframes loading-spin { to { transform: rotate(360deg); } }
+
+/* Entry screen */
+.entry-screen { min-height: calc(100svh - 132px); padding: 22px 24px 28px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+.entry-hero { width: 228px; height: 228px; border-radius: 50%; background: #f3edff; display: grid; place-items: center; margin: 0 auto 28px; }
+.entry-hero img { width: 178px; height: 178px; object-fit: contain; }
+.entry-copy h1 { font-size: 31px; line-height: 1.45; letter-spacing: -.055em; }
+.entry-copy h1 span { color: #7c3aed; }
+.entry-copy p { color: #776d8c; font-size: 14px; margin-top: 10px; }
+.entry-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 34px; }
+.google-login-button { min-height: 54px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; border: 1px solid #ddd5e9; border-radius: 13px; background: white; color: #2b2140; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; padding: 12px 16px; }
+.google-login-button:hover { border-color: #a78bfa; background: #fdfbff; }
+.google-login-button:disabled { opacity: .45; cursor: not-allowed; }
+.entry-note { color: #80758f; font-size: 12px; line-height: 1.8; margin-top: 12px; }
+.entry-screen > .inline-notice { margin-top: 16px; text-align: left; }
+
+/* Settings page */
+.settings-screen { padding: 12px 22px 26px; display: flex; flex-direction: column; gap: 28px; }
+.settings-account { display: flex; gap: 17px; align-items: center; background: white; border-radius: 20px; padding: 22px 18px; box-shadow: 0 5px 20px #7c3aed07; }
+.account-avatar { width: 67px; height: 67px; border-radius: 50%; background: #7c3aed; color: white; font-size: 30px; font-weight: 800; display: grid; place-items: center; flex-shrink: 0; }
+.settings-account h2 { font-size: 21px; overflow-wrap: anywhere; }
+.settings-account p { font-size: 12.5px; color: #776d8c; margin-top: 3px; }
+.settings-account span { font-size: 11px; color: #8a809a; }
+.settings-list { background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 5px 20px #7c3aed05; }
+.settings-row { width: 100%; background: white; border: 0; border-bottom: 1px solid #efebf5; padding: 17px 16px; display: flex; align-items: center; gap: 10px; text-align: left; font-size: 14px; color: var(--color-text); cursor: pointer; min-height: 58px; }
+.settings-row > span:first-child { margin-right: auto; font-weight: 600; }
+.settings-row .settings-value { font-size: 13px; color: #776d8c; text-align: right; overflow-wrap: anywhere; max-width: 52%; }
+.settings-row svg { color: #8b80a0; flex-shrink: 0; }
+.settings-row:disabled { opacity: .45; cursor: default; }
+.settings-row:last-child { border-bottom: 0; }
+.settings-row:hover:not(:disabled) { background: #fcfaff; }
+.settings-details { border-bottom: 1px solid #efebf5; }
+.settings-details:last-child { border-bottom: 0; }
+summary { list-style: none; }
+summary::-webkit-details-marker { display: none; }
+.settings-details[open] > summary svg, .more-nutrients[open] > summary svg, .saved-meal-card[open] > summary > svg, .meal-contents[open] > summary svg { transform: rotate(90deg); }
+.settings-detail-copy { font-size: 12px; color: #776d8c; padding: 0 17px 17px; line-height: 1.8; }
+.settings-detail-copy p + p { margin-top: 10px; }
+.settings-bottom { padding-top: 4px; text-align: center; }
+.settings-bottom .btn { min-height: 48px; }
+
+@media (min-width: 640px) {
+  .app-outer { background: #f5f2fb; padding: 24px 16px; }
+  .app-shell { min-height: calc(100dvh - 48px); border-radius: 28px; border-color: #eae2f7; box-shadow: 0 14px 50px #5b21b612; }
+  .entry-screen { min-height: calc(100svh - 180px); }
+}
+@media (max-width: 360px) {
+  .screen, .settings-screen { padding-left: 16px; padding-right: 16px; }
+  .entry-screen { padding-left: 20px; padding-right: 20px; }
+  .entry-copy h1 { font-size: 27px; }
+}
+@media (max-height: 740px) {
+  .entry-hero { width: 174px; height: 174px; margin-bottom: 18px; }
+  .entry-hero img { width: 140px; height: 140px; }
+  .entry-actions { margin-top: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-dot { animation: none; }
+  .btn { transition: none; }
+}
