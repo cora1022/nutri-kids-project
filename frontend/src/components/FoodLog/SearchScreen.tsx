@@ -82,14 +82,16 @@ export default function SearchScreen() {
   const [results, setResults] = useState<Food[] | null>(null); // null = 검색 전
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
 
   async function handleSearch(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!query.trim()) return;
     setSearching(true);
-    const found = await searchFoods(query);
-    setResults(found);
-    setSearching(false);
+    setSearchError('');
+    try { setResults(await searchFoods(query)); }
+    catch (error) { setSearchError(error instanceof Error ? error.message : '상품을 검색하지 못했어요.'); }
+    finally { setSearching(false); }
   }
 
   function handlePick(food: Food) {
@@ -119,6 +121,7 @@ export default function SearchScreen() {
           <form className="search-bar" onSubmit={handleSearch}>
             <input
               type="text"
+              aria-label="상품명으로 검색"
               placeholder="상품명으로 검색 (예: 삼각김밥, 우유)"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -127,6 +130,7 @@ export default function SearchScreen() {
               {searching ? '검색 중…' : '검색'}
             </Button>
           </form>
+          {searchError && <p className="inline-notice notice-error" role="alert">{searchError}</p>}
 
           {results !== null && (
             <div className="result-list">

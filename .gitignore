@@ -37,3 +37,5 @@ backend/.env
 .env.production
 deploy-data/
 client_secret_*.json
+frontend/test-results/
+frontend/playwright-report/
