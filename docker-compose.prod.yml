@@ -5,6 +5,13 @@ x-api-environment: &api-environment
   CORS_ORIGINS: https://nutri.cora1022.com
   AUTO_CREATE_TABLES: "true"
   MFDS_SERVICE_KEY: ${MFDS_SERVICE_KEY:-}
+  FRONTEND_URL: https://nutri.cora1022.com
+  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+  GOOGLE_REDIRECT_URI: https://nutri.cora1022.com/api/v1/auth/google/callback
+  OAUTH_SESSION_SECRET: ${OAUTH_SESSION_SECRET:-}
+  COOKIE_SECURE: "true"
+  SESSION_DAYS: "7"
 
 x-logging: &logging
   driver: json-file
