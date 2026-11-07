@@ -66,7 +66,7 @@
 }
 ```
 
-`PUT /users/me/profile` 요청은 `nickname`, `sex`, `age`, `heightCm`, `weightKg`, `mealsPerDay`를 받습니다. 철분과 나트륨은 평가 기준 범위 밖이므로 해당 목표의 `value`가 `null`입니다. OAuth 설정은 서버 환경 변수로 전달합니다.
+`PUT /users/me/profile` 요청은 `nickname`, `sex`, `age`, `heightCm`, `weightKg`, `mealsPerDay`를 받습니다. 철분과 나트륨은 평가 기준 범위 밖이므로 해당 목표의 `value`가 `null`입니다. 설정 방법은 [google-login.md](google-login.md)에 있습니다.
 
 ## 상품 검색
 
