@@ -1,0 +1,84 @@
+name: Deploy static site
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - static-nutri/**
+      - .github/workflows/deploy-static.yml
+  push:
+    branches:
+      - main
+    paths:
+      - static-nutri/**
+      - .github/workflows/deploy-static.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build static site
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: static-nutri
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: static-nutri/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Reject duplicate JavaScript and TypeScript modules
+        working-directory: .
+        run: node .github/scripts/check-frontend-source-duplicates.mjs static-nutri/src
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: static-nutri/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5

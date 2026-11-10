@@ -1,0 +1,693 @@
+{
+ "source": "2026-11-10 운영 API /meals/analyze 응답",
+ "request": {
+  "mealType": "LUNCH",
+  "eatenAt": "2026-11-10T12:00:00+09:00",
+  "profile": {
+   "sex": "MALE",
+   "age": 14,
+   "heightCm": 128.5,
+   "weightKg": 22,
+   "mealsPerDay": 1
+  },
+  "items": [
+   {
+    "foodId": "cu:28144",
+    "quantity": 0.5,
+    "quantityUnit": "SERVING"
+   },
+   {
+    "foodId": "cu:26053",
+    "quantity": 0.5,
+    "quantityUnit": "SERVING"
+   },
+   {
+    "foodId": "cu:16776",
+    "quantity": 0.5,
+    "quantityUnit": "SERVING"
+   },
+   {
+    "foodId": "cu:26242",
+    "quantity": 1,
+    "quantityUnit": "SERVING"
+   }
+  ],
+  "recommendationScope": "CU_ONLY"
+ },
+ "catalog": [
+  {
+   "id": "cu:28144",
+   "sourceType": "CU_PRODUCT",
+   "name": "조이)애플망고퐁당케익",
+   "brand": "조이",
+   "category": "과자류",
+   "price": 4300,
+   "barcode": "8800361441052",
+   "imageUrl": "https://tqklhszfkvzk6518638.edge.naverncp.com/product/8800361441052.jpg",
+   "itemReportNo": "200702751171354",
+   "itemReportCandidates": [
+    "200702751171354"
+   ],
+   "itemReportStatus": "상품명 유사 자동 확정",
+   "itemReportEvidence": "기존 제품명 검색 후보 전체 기재; 추가 대조 없음; 번호·제품명·업체명은 같은 순서. 단일 후보를 자동 확정",
+   "serving": {
+    "amount": 100,
+    "unit": "g",
+    "countUnit": "회",
+    "label": "100g 표준 기준 추정"
+   },
+   "nutrients": {
+    "kcal": {
+     "value": 489,
+     "unit": "kcal",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "protein": {
+     "value": 5.7,
+     "unit": "g",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "calcium": {
+     "value": 184,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "iron": {
+     "value": 3.27,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminA": {
+     "value": 81,
+     "unit": "µgRAE",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminC": {
+     "value": 0.05,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "sodium": {
+     "value": 227,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    }
+   },
+   "overallQuality": "ESTIMATED",
+   "standardFoodMatch": {
+    "foodCode": "185",
+    "name": "과자, 비스킷, 소프트",
+    "matchMethod": "CATEGORY_DEFAULT",
+    "confidence": 0.5
+   }
+  },
+  {
+   "id": "cu:26053",
+   "sourceType": "CU_PRODUCT",
+   "name": "브롤)콜트스윗솔티팝콘",
+   "brand": "브롤",
+   "category": "과자류",
+   "price": 1900,
+   "barcode": "8809027553405",
+   "imageUrl": "https://tqklhszfkvzk6518638.edge.naverncp.com/product/8809027553405.jpg",
+   "itemReportNo": "20100461303866",
+   "itemReportCandidates": [
+    "20100461303866"
+   ],
+   "itemReportStatus": "상품명 유사 자동 확정",
+   "itemReportEvidence": "기존 제품명 검색 후보 전체 기재; 추가 대조 없음; 번호·제품명·업체명은 같은 순서. 단일 후보를 자동 확정",
+   "serving": {
+    "amount": 100,
+    "unit": "g",
+    "countUnit": "회",
+    "label": "100g 표준 기준 추정"
+   },
+   "nutrients": {
+    "kcal": {
+     "value": 497,
+     "unit": "kcal",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "protein": {
+     "value": 8.12,
+     "unit": "g",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "calcium": {
+     "value": 6,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "iron": {
+     "value": 2.03,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminA": {
+     "value": 3,
+     "unit": "µgRAE",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminC": {
+     "value": 0,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "sodium": {
+     "value": 315,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    }
+   },
+   "overallQuality": "ESTIMATED",
+   "standardFoodMatch": {
+    "foodCode": "362",
+    "name": "옥수수 과자, 팝콘, 전자레인지 조리",
+    "matchMethod": "NORMALIZED_RULE",
+    "confidence": 0.88
+   }
+  },
+  {
+   "id": "cu:16776",
+   "sourceType": "CU_PRODUCT",
+   "name": "즉석빵)우유크림소보로N",
+   "brand": "즉석빵",
+   "category": "즉석조리",
+   "price": 1800,
+   "barcode": "2202000034377",
+   "imageUrl": "https://tqklhszfkvzk6518638.edge.naverncp.com/product/2202000034377.jpg",
+   "itemReportNo": "20150347299876",
+   "itemReportCandidates": [
+    "20150347299876"
+   ],
+   "itemReportStatus": "상품명 유사 자동 확정",
+   "itemReportEvidence": "기존 제품명 검색 후보 전체 기재; 추가 대조 없음; 번호·제품명·업체명은 같은 순서. 단일 후보를 자동 확정",
+   "serving": {
+    "amount": 100,
+    "unit": "g",
+    "countUnit": "회",
+    "label": "100g 표준 기준 추정"
+   },
+   "nutrients": {
+    "kcal": {
+     "value": 415,
+     "unit": "kcal",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "protein": {
+     "value": 9.5,
+     "unit": "g",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "calcium": {
+     "value": 35,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "iron": {
+     "value": 0.71,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminA": {
+     "value": 23,
+     "unit": "µgRAE",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminC": {
+     "value": 0,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "sodium": {
+     "value": 307,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    }
+   },
+   "overallQuality": "ESTIMATED",
+   "standardFoodMatch": {
+    "foodCode": "229",
+    "name": "빵, 곰보빵",
+    "matchMethod": "NORMALIZED_RULE",
+    "confidence": 0.83
+   }
+  },
+  {
+   "id": "cu:26242",
+   "sourceType": "CU_PRODUCT",
+   "name": "농심)벌집핏자90g",
+   "brand": "농심",
+   "category": "과자류",
+   "price": 1800,
+   "barcode": "8801043036313",
+   "imageUrl": "https://tqklhszfkvzk6518638.edge.naverncp.com/product/8801043036313.jpg",
+   "itemReportNo": "19720154001130",
+   "itemReportCandidates": [
+    "19720154001130",
+    "19760342001181"
+   ],
+   "itemReportStatus": "상품명 유사 자동 확정",
+   "itemReportEvidence": "기존 제품명 검색 후보 전체 기재; 추가 대조 없음; 번호·제품명·업체명은 같은 순서. 복수 후보 중 첫 번째 번호를 대표값으로 자동 확정",
+   "serving": {
+    "amount": 90,
+    "unit": "g",
+    "countUnit": "회",
+    "label": "90g 상품 기준 추정"
+   },
+   "nutrients": {
+    "kcal": {
+     "value": 440.1,
+     "unit": "kcal",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "protein": {
+     "value": 5.13,
+     "unit": "g",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "calcium": {
+     "value": 165.6,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "iron": {
+     "value": 2.943,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminA": {
+     "value": 72.9,
+     "unit": "µgRAE",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminC": {
+     "value": 0.045,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "sodium": {
+     "value": 204.3,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    }
+   },
+   "overallQuality": "ESTIMATED",
+   "standardFoodMatch": {
+    "foodCode": "185",
+    "name": "과자, 비스킷, 소프트",
+    "matchMethod": "CATEGORY_DEFAULT",
+    "confidence": 0.5
+   }
+  },
+  {
+   "id": "cu:18013",
+   "sourceType": "CU_PRODUCT",
+   "name": "매일)썬업오렌지750ml",
+   "brand": "매일",
+   "category": "음료",
+   "price": 4900,
+   "barcode": "8801121027042",
+   "imageUrl": "https://tqklhszfkvzk6518638.edge.naverncp.com/product/8801121027042.png",
+   "itemReportNo": "2003047205219",
+   "itemReportCandidates": [
+    "2003047205219"
+   ],
+   "itemReportStatus": "상품명 유사 자동 확정",
+   "itemReportEvidence": "제품명 일치(말미 용량 제외); CU 접두어와 DB 업체명 대조. 단일 후보를 자동 확정",
+   "serving": {
+    "amount": 750,
+    "unit": "ml",
+    "countUnit": "회",
+    "label": "750ml 상품 기준 추정"
+   },
+   "nutrients": {
+    "kcal": {
+     "value": 270,
+     "unit": "kcal",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "protein": {
+     "value": 4.35,
+     "unit": "g",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "calcium": {
+     "value": 165,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "iron": {
+     "value": 0.525,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminA": {
+     "value": 7.5,
+     "unit": "µgRAE",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminC": {
+     "value": 385.8,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "sodium": {
+     "value": 15,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    }
+   },
+   "overallQuality": "ESTIMATED",
+   "standardFoodMatch": {
+    "foodCode": "1546",
+    "name": "오렌지 주스",
+    "matchMethod": "NORMALIZED_RULE",
+    "confidence": 0.9
+   }
+  },
+  {
+   "id": "cu:540",
+   "sourceType": "CU_PRODUCT",
+   "name": "CJ)대두유500ml",
+   "brand": "CJ",
+   "category": "식품",
+   "price": 3500,
+   "barcode": "8801007402284",
+   "imageUrl": "https://tqklhszfkvzk6518638.edge.naverncp.com/product/8801007402284.jpg",
+   "itemReportNo": "1976052300158",
+   "itemReportCandidates": [
+    "1976052300158",
+    "19790190025204",
+    "19800190030357",
+    "1987019002377",
+    "19930383522114",
+    "1995020805658",
+    "19960449002453",
+    "2000061420918",
+    "2005061708859",
+    "201703470603",
+    "202602795981"
+   ],
+   "itemReportStatus": "상품명 유사 자동 확정",
+   "itemReportEvidence": "기존 제품명 검색 후보 전체 기재; 추가 대조 없음; 번호·제품명·업체명은 같은 순서. 복수 후보 중 첫 번째 번호를 대표값으로 자동 확정",
+   "serving": {
+    "amount": 500,
+    "unit": "ml",
+    "countUnit": "회",
+    "label": "500ml 상품 기준 추정"
+   },
+   "nutrients": {
+    "kcal": {
+     "value": 310,
+     "unit": "kcal",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "protein": {
+     "value": 15.05,
+     "unit": "g",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "calcium": {
+     "value": 400,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "iron": {
+     "value": 2.8,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminA": {
+     "value": 0,
+     "unit": "µgRAE",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminC": {
+     "value": 48.95,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "sodium": {
+     "value": 360,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    }
+   },
+   "overallQuality": "ESTIMATED",
+   "standardFoodMatch": {
+    "foodCode": "571",
+    "name": "두유, 대두",
+    "matchMethod": "NORMALIZED_RULE",
+    "confidence": 0.93
+   }
+  },
+  {
+   "id": "cu:10157",
+   "sourceType": "CU_PRODUCT",
+   "name": "동원)쿨피스복숭아450ml",
+   "brand": "동원",
+   "category": "음료",
+   "price": 1000,
+   "barcode": "8801155411114",
+   "imageUrl": "https://tqklhszfkvzk6518638.edge.naverncp.com/product/8801155411114.jpg",
+   "itemReportNo": "1976026300411",
+   "itemReportCandidates": [
+    "1976026300411"
+   ],
+   "itemReportStatus": "상품명 유사 자동 확정",
+   "itemReportEvidence": "제품명 일치(말미 용량 제외); CU 접두어와 DB 업체명 대조. 단일 후보를 자동 확정",
+   "serving": {
+    "amount": 450,
+    "unit": "ml",
+    "countUnit": "회",
+    "label": "450ml 상품 기준 추정"
+   },
+   "nutrients": {
+    "kcal": {
+     "value": 189,
+     "unit": "kcal",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "protein": {
+     "value": 0.765,
+     "unit": "g",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "calcium": {
+     "value": 9,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "iron": {
+     "value": 0,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminA": {
+     "value": 0,
+     "unit": "µgRAE",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "vitaminC": {
+     "value": 198.045,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    },
+    "sodium": {
+     "value": 13.5,
+     "unit": "mg",
+     "quality": "ESTIMATED",
+     "source": "NATIONAL_STANDARD"
+    }
+   },
+   "overallQuality": "ESTIMATED",
+   "standardFoodMatch": {
+    "foodCode": "1518",
+    "name": "사과 주스",
+    "matchMethod": "NORMALIZED_RULE",
+    "confidence": 0.66
+   }
+  }
+ ],
+ "expected": {
+  "nutrients": {
+   "kcal": {
+    "actual": 1140.6,
+    "target": 1221.86,
+    "upperLimit": null,
+    "unit": "kcal",
+    "ratio": 0.9335,
+    "status": "ADEQUATE",
+    "quality": "ESTIMATED"
+   },
+   "protein": {
+    "actual": 16.79,
+    "target": 60.0,
+    "upperLimit": null,
+    "unit": "g",
+    "ratio": 0.2798,
+    "status": "LOW",
+    "quality": "ESTIMATED"
+   },
+   "calcium": {
+    "actual": 278.1,
+    "target": 950.0,
+    "upperLimit": 3000.0,
+    "unit": "mg",
+    "ratio": 0.2927,
+    "status": "LOW",
+    "quality": "ESTIMATED"
+   },
+   "iron": {
+    "actual": 5.95,
+    "target": null,
+    "upperLimit": null,
+    "unit": "mg",
+    "ratio": null,
+    "status": "UNKNOWN",
+    "quality": "ESTIMATED"
+   },
+   "vitaminA": {
+    "actual": 126.4,
+    "target": 750.0,
+    "upperLimit": null,
+    "unit": "µgRAE",
+    "ratio": 0.1685,
+    "status": "LOW",
+    "quality": "ESTIMATED"
+   },
+   "vitaminC": {
+    "actual": 0.07,
+    "target": 90.0,
+    "upperLimit": 1400.0,
+    "unit": "mg",
+    "ratio": 0.0008,
+    "status": "LOW",
+    "quality": "ESTIMATED"
+   },
+   "sodium": {
+    "actual": 628.8,
+    "target": null,
+    "upperLimit": null,
+    "unit": "mg",
+    "ratio": null,
+    "status": "UNKNOWN",
+    "quality": "ESTIMATED"
+   },
+   "carbohydrate": {
+    "actual": null,
+    "target": 175.64,
+    "upperLimit": null,
+    "unit": "g",
+    "ratio": null,
+    "status": "UNKNOWN",
+    "quality": "MISSING"
+   },
+   "vitaminD": {
+    "actual": null,
+    "target": 10.0,
+    "upperLimit": 100.0,
+    "unit": "µg",
+    "ratio": null,
+    "status": "UNKNOWN",
+    "quality": "MISSING"
+   }
+  },
+  "totalPrice": 5800,
+  "recommendations": [
+   {
+    "id": "cu:18013",
+    "score": 0.3139,
+    "reasonNutrients": [
+     "calcium",
+     "protein",
+     "vitaminA",
+     "vitaminC"
+    ]
+   },
+   {
+    "id": "cu:540",
+    "score": 0.3039,
+    "reasonNutrients": [
+     "calcium",
+     "protein",
+     "vitaminC"
+    ]
+   },
+   {
+    "id": "cu:10157",
+    "score": 0.2554,
+    "reasonNutrients": [
+     "calcium",
+     "protein",
+     "vitaminC"
+    ]
+   }
+  ],
+  "warningCodes": [
+   "REFERENCE_VERSION",
+   "ACTIVITY_ASSUMED",
+   "ENERGY_CALCULATION",
+   "MEAL_PLANNING_POLICY",
+   "DAILY_UL_NOT_MEAL_LIMIT",
+   "VITAMIN_A_UL_NOT_ASSESSED",
+   "OUT_OF_SCOPE_REFERENCE",
+   "CARBOHYDRATE_PLANNING_RANGE",
+   "NUTRIENT_DATA_MISSING",
+   "NUTRIENT_DATA_MISSING",
+   "NUTRIENT_DATA_MISSING",
+   "NUTRIENT_DATA_MISSING",
+   "ESTIMATED_NUTRIENTS",
+   "RECOMMENDATION_POLICY"
+  ]
+ }
+}
