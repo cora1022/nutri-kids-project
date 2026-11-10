@@ -137,7 +137,6 @@ backend/
     models.py                MySQL 테이블 모델
   scripts/                   원천 데이터 적재 진입점
   tests/                     API 계약 테스트
-static-nutri/                서버 없이 동작하는 정적 배포본
 docs/
   images/                   README 배너와 실제 실행 화면
   api-contract.md            프론트와 백엔드 계약 문서
